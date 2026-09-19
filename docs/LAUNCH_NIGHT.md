@@ -25,7 +25,7 @@ This is the operator runbook for a clean macOS Catalina launch-night setup. Work
   xcode-select --install
   xcode-select -p
   ```
-  Official Apple reference: [TN2339 — Building from the Command Line with Xcode FAQ](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)
+ Official Apple reference: TN2339 — Building from the Command Line with Xcode FAQ
 - [ ] Confirm the selected developer directory is valid:
   ```sh
   xcrun --find git
@@ -34,7 +34,7 @@ This is the operator runbook for a clean macOS Catalina launch-night setup. Work
 
 ## 2. Homebrew
 
-- [ ] Install or update Homebrew using the official instructions. For this launch kit, use the Homebrew 7.0.0 release guidance: [Homebrew 7.0.0](https://brew.sh/2026/09/13/homebrew-7.0.0/).
+- [ ] Install or update Homebrew using the official instructions. For this launch kit, use the Homebrew 7.0.0 release guidance: Homebrew 7.0.0.
 - [ ] Verify the installation and shell environment:
   ```sh
   brew --version
@@ -45,13 +45,13 @@ This is the operator runbook for a clean macOS Catalina launch-night setup. Work
 
 ## 3. Runtime and source control
 
-- [ ] Install the supported Node.js release from the official download page: [Node.js downloads](https://nodejs.org/en/download).
+- [ ] Install the supported Node.js release from the official download page: Node.js downloads.
 - [ ] Verify Node and npm:
   ```sh
   node --version
   npm --version
   ```
-- [ ] Install Git using the official macOS instructions: [Git for macOS](https://git-scm.com/install/mac).
+- [ ] Install Git using the official macOS instructions: Git for macOS.
 - [ ] Verify Git identity and repository access without printing credentials:
   ```sh
   git --version
@@ -63,15 +63,15 @@ This is the operator runbook for a clean macOS Catalina launch-night setup. Work
 
 ## 4. Operator tools
 
-- [ ] Install Visual Studio Code only if it is part of your operator workflow; review the official platform requirements first: [VS Code requirements](https://code.visualstudio.com/docs/supporting/requirements).
+- [ ] Install Visual Studio Code only if it is part of your operator workflow; review the official platform requirements first: VS Code requirements.
 - [ ] Confirm the `code` command is available, or open the project from the VS Code application:
   ```sh
   code --version
   ```
-- [ ] Install MetaTrader 5 only when the broker/integration requires it, following the official macOS installation guide: [MetaTrader 5 — installation on macOS](https://www.metatrader5.com/en/terminal/help/start_advanced/install_mac).
+- [ ] Install MetaTrader 5 only when the broker/integration requires it, following the official macOS installation guide: MetaTrader 5 — installation on macOS.
 - [ ] Open MetaTrader 5 once, complete its broker/demo login interactively, and verify that the intended account is selected. Do not store the password in this repository.
-- [ ] Install Docker Desktop using the official guide: [Install Docker Desktop on Mac](https://docs.docker.com/desktop/setup/install/mac-install/).
-- [ ] Check Docker Desktop’s release notes before upgrading or troubleshooting: [Docker Desktop release notes](https://docs.docker.com/desktop/release-notes/).
+- [ ] Install Docker Desktop using the official guide: Install Docker Desktop on Mac.
+- [ ] Check Docker Desktop’s release notes before upgrading or troubleshooting: Docker Desktop release notes.
 - [ ] Start Docker Desktop manually and wait until it reports that Docker is running:
   ```sh
   docker version
@@ -177,3 +177,18 @@ Fill this in after the smoke test, without recording secrets:
 - **Smoke-test result:** ____________________________________
 - **Go/no-go decision and approver:** _______________________
 - **Follow-up issue or note:** _____________________________
+
+## Catalina sandbox alternatives (researched 2026-09-19)
+
+**Exact route tonight:** Use GitHub Actions (`ubuntu-latest`) or Codespaces if available. Skip local containers unless Docker Desktop is already installed and healthy on Catalina. If cloud access is unavailable, defer the VM route rather than install a runtime tonight.
+
+| Option | Catalina support YES-NO-VERIFY | Effort + resource cost (250GB HDD, 4–8GB RAM) | USEFUL-SKIP |
+|---|---|---|---|
+| Docker Desktop 4.15.1 | VERIFY: best evidence last compatible line; 4.16.0 dropped Catalina; no verified official direct URL | Low if already installed; moderate disk/RAM pressure | USEFUL only if present; no mirrors |
+| Podman Desktop/current machine | VERIFY/NO: no supported Catalina path; qemu/vfkit history unverified | Moderate-high; tight RAM/disk | SKIP |
+| Colima / OrbStack / Lima | NO / VERIFY / VERIFY: current docs do not establish Catalina; older QEMU paths unpinned | Moderate VM overhead | SKIP |
+| VirtualBox 6.1.50 + lightweight Linux VM + Docker Engine | VERIFY: final 6.1 line, official Intel/macOS old-build installer, legacy/unsupported | High; heavy and slow tonight | SKIP tonight |
+| Vagrant + VirtualBox | VERIFY: possible, but adds setup effort | High; same VM cost | SKIP |
+| GitHub Actions / Codespaces | YES: cloud Linux host | Low local disk/RAM; quota/network cost | USEFUL |
+
+**Sources:** https://docs.docker.com/desktop/release-notes/ https://docs.docker.com/desktop/setup/install/mac-install/ https://github.com/docker/for-mac/issues/6671 https://www.virtualbox.org/wiki/Download_Old_Builds_6_1 https://www.virtualbox.org/wiki/Changelog-6.1 https://colima.run/docs/faq https://github.com/abiosoft/colima/issues/618 https://podman-desktop.io/docs/installation/macos-install https://podman.io/docs/installation https://github.com/lima-vm/lima/discussions/923 https://orbstack.dev https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners https://docs.github.com/en/codespaces/overview https://docs.docker.com/engine/install/
