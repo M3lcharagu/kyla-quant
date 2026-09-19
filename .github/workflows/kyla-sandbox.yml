@@ -1,0 +1,50 @@
+name: Kyla sandbox
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: Command to run on ubuntu-latest
+        required: true
+        type: string
+      script:
+        description: Optional repository script path; takes precedence over command
+        required: false
+        type: string
+  repository_dispatch:
+    types: [kyla-sandbox]
+
+permissions:
+  contents: read
+
+jobs:
+  sandbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SANDBOX_COMMAND: ${{ github.event.inputs.command || github.event.client_payload.command }}
+      SANDBOX_SCRIPT: ${{ github.event.inputs.script || github.event.client_payload.script }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run sandbox
+        run: |
+          mkdir -p artifacts
+          set +e
+          if [ -n "${SANDBOX_SCRIPT:-}" ]; then
+            bash "$SANDBOX_SCRIPT"
+          elif [ -n "${SANDBOX_COMMAND:-}" ]; then
+            bash -lc "$SANDBOX_COMMAND"
+          else
+            echo 'No command or script supplied.'
+            exit 2
+          fi 2>&1 | tee artifacts/kyla-sandbox.log
+          status=${PIPESTATUS[0]}
+          printf 'exit_status=%s\n' "$status" | tee -a artifacts/kyla-sandbox.log
+          exit "$status"
+      - name: Upload sandbox log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kyla-sandbox-log
+          path: artifacts/kyla-sandbox.log
+          if-no-files-found: warn
