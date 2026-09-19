@@ -1,0 +1,21 @@
+# Freqtrade dry-run example only; replace placeholders and review every setting.
+# Never use this file as live configuration without independent approval.
+dry_run: true
+exchange:
+  name: YOUR_EXCHANGE
+  key: YOUR_DRY_RUN_KEY
+  secret: YOUR_DRY_RUN_SECRET
+  ccxt_config: {}
+  ccxt_async_config: {}
+
+timeframe: YOUR_TIMEFRAME
+stake_currency: YOUR_STAKE_CURRENCY
+stake_amount: YOUR_STAKE_AMOUNT
+max_open_trades: 1
+cancel_open_orders_on_exit: true
+
+default_strategy: YOUR_STRATEGY_CLASS
+api_server:
+  enabled: false
+
+# TODO: verify fees, slippage, protections, and time-exit behavior in a sandbox.
