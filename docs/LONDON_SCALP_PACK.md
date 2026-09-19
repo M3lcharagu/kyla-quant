@@ -1,155 +1,53 @@
 # London Scalp Pack
 
-This pack contains three **pure Python standard-library** signal generators:
+Research/paper signals only. The executor must re-check quote freshness, tick size, margin, broker/exchange rules, position state, fills, fees and news before acting.
 
-- `quant/strategies/asian_range_breakout.py`
-- `quant/strategies/gold_killzone_scalp.py`
-- `quant/strategies/sol_micro_scalp.py`
+## Interface and paths
 
-The originally named `london_orb.py` and `backtest.py` paths are absent. The
-actual repository strategy code is in `src/kyla_quant/strategies/`, and the
-actual runner is `src/kyla_quant/backtest/backtesting_py_runner.py`.
-Existing strategies there are deterministic detectors and data classes (for
-example `Bar`, `detect_fvgs`, and `detect_orb_setups`). The runner's actual
-contract is a strategy with `fit(data)` and `evaluate(data, costs=...)`, plus a
-walk-forward split and cost validation. Each new class implements that
-contract and also provides the requested streaming `next(candle) -> Signal |
-None` adapter. The module-level `next(candle)` is only a convenience; use a
-class instance for isolated state.
+The requested bare `london_orb.py` and `backtest.py` paths are absent at repository root and are not an interface to invent. The checked tree's similarly named modules are `quant/strategies/london_orb.py` and `quant/backtest.py`. The amended stream modules are `quant/strategies/asian_range_breakout.py`, `quant/strategies/gold_killzone_scalp.py`, and `quant/strategies/sol_micro_scalp.py`; each is stdlib-only and exposes `next(candle) -> Signal | None`, plus class methods `next`, `fit`, and `evaluate`. Signal fields are `action`, `entry`, `stop`, `target`, `timestamp`, `reason`, and `risk_r`; gold and SOL add metadata. The repository runner/data contract remains the actual `quant` and `src/kyla_quant` code, not a claimed missing root file.
 
-## Candle and signal contract
+## Clock and window
 
-A candle may be a mapping or object with `timestamp`, `open`, `high`, `low`,
-and `close`. `volume` and `spread` are optional where stated. Use an aware
-`datetime` or ISO-8601 timestamp. Naive timestamps are treated as UTC. Signals
-contain action, entry, stop, target, timestamp, reason, and risk multiple.
-They are not orders: execution must re-check quote freshness, tick size,
-margin, exchange rules, position state, and actual fills.
+- Available window: **09:00-16:00 EAT**, `Africa/Nairobi`, UTC+3 year-round.
+- London open: **10:00 EAT in BST / 11:00 EAT in GMT**, equal to **07:00 / 08:00 UTC**.
+- US cash open is **18:30 EAT**; therefore NAS100 ORB is excluded.
+- Use `zoneinfo`, never a hard-coded London offset.
 
-`fit` is deliberately a no-op because these are fixed, auditable rules, not
-fitted models. `evaluate` resets the stream and returns status, signals, count,
-and the supplied costs object. It does not claim profitability or simulate
-fills. The repository runner remains responsible for a train/test split,
-minimum-cycle gate, and report.
+## Hour-by-hour map
 
-## DST-aware clocks
+| EAT | What is live | Status |
+|---|---|---|
+| 09:00 | Pre-London quiet: prepare levels, data and news gates; no scheduled FX/gold entry, while SOL is 24/7. | FILTERED |
+| 10:00 | London open 10:00-10:30: GBPUSD ORB range is 10:00-10:15 then breakout/retest; USDJPY and XAUUSD can become live, subject to UK data gates. | TRADE |
+| 11:00 | AM momentum 10:30-12:00: GBPUSD priority candidate, USDJPY and XAUUSD remain eligible under their gates. | TRADE |
+| 12:00 | Late AM momentum: GBPUSD remains eligible; XAUUSD remains live through 13:00. | TRADE |
+| 13:00 | GBPUSD expires at 13:00; lunch lull begins. No new GBPUSD/gold entries; USDJPY is also lunch-filtered until 14:00. | STAND DOWN |
+| 14:00 | PM drift 14:00-16:00: scheduled FX/gold entries are closed; manage approved trades only, with SOL still 24/7. | FILTERED |
+| 15:00-16:00 | PM drift continues; no new London FX/gold setup. SOL remains live only with its funding, ATR and BTC-dump gates. | FILTERED |
 
-EAT is `Africa/Nairobi` (UTC+03:00, no DST). London and New York are resolved
-with `zoneinfo`, never by adding a fixed offset.
+## Four strategies
 
-| Setup/window | Local rule | UTC winter | UTC summer | EAT winter / summer |
-|---|---|---|---|---|
-| Asian range | 00:00-06:00 EAT | 21:00-03:00, crosses UTC date | same | 00:00-06:00 / 00:00-06:00 |
-| London kill zone | 08:00-10:00 Europe/London | 08:00-10:00 GMT | 07:00-09:00 BST | 11:00-13:00 / 10:00-12:00 |
-| New York kill zone | 08:30-10:30 America/New_York | 13:30-15:30 EST | 12:30-14:30 EDT | 16:30-18:30 / 15:30-17:30 |
-| SOL micro window | 15:30-18:00 EAT | 12:30-15:00 | same | 15:30-18:00 |
+1. **GBPUSD London ORB (priority candidate).** Build the 15-minute range from **10:00-10:15 EAT (07:00-07:15 UTC)**, then require breakout plus retest, stop beyond the range, target **2R**, and invalidate at **13:00 EAT**. This is the narrative priority candidate; do not claim a new `london_orb.py` root path when integrating it with the actual repository interface.
+2. **USDJPY Asian range.** Build the range **03:00-10:00 EAT (00:00-07:00 UTC)**. Accept a **5-minute close breakout** only from **10:00-14:00 EAT**, stop at the range extreme, use configurable fixed-R target, and lock entries on BoJ intervention/rate-check headlines.
+3. **XAUUSD killzone FVG.** During **10:00-13:00 EAT**, require an Asian high/low liquidity sweep, displacement, then FVG retrace; stop beyond the sweep and target opposing liquidity or fixed R. A live spread is mandatory; skip spread **>2x rolling median** and reject missing live spread or median.
+4. **SOL 24/7 Binance futures maker-side.** Target **0.5-1%**, hold **30-45 minutes max**, require a funding check, reject compressed ATR, reject BTC candle dumps, and price maker fee **0.02% per side** (`0.0002`) in cost math. There is no fixed EAT session.
 
-The displayed winter/summer dates are explanatory; `zoneinfo` is authoritative
-on the actual UK/US transition days. EAT windows do not move with DST.
+## Stand-down rules
 
-## Strategy rules
+Stand down for UK CPI/GDP/BoE speeches, spread widening over the configured gate, the thin **13:00-14:00 EAT** lunch, and red-news overlap. GBPJPY is allowed only when the target is **at least 20 pips**. Do not force a trade to fill a schedule.
 
-### 1. Asian range breakout
+## Risk
 
-1. Build the high and low from 00:00 through 06:00 EAT, inclusive of bars
-   beginning in that interval and exclusive of 06:00.
-2. Ignore an absent/zero range and reject a range wider than 2% of its
-   midpoint. This avoids treating a data gap or extreme event as a normal
-   breakout.
-3. During 08:00-10:00 London local time, wait for a candle close above the
-   range high (long) or below the range low (short).
-4. Default behavior requires a later touch of the broken edge that closes
-   back in the breakout direction. Set `require_retest=False` only when an
-   explicit close-break test is intended.
-5. Entry is the confirmation candle close. Stop is the opposite range edge
-   plus the configured buffer on the safe side. Target is 2R by default.
-6. Only one signal is emitted per EAT day; no chasing outside the window.
+Use fixed fractional risk of **0.5-1% per strategy**, maximum **2 concurrent** positions, never hold GBPUSD and GBPJPY both long, and apply a daily kill switch at **-3R**. The **$150/week trailing target on $5k stays**; it is a tracking target, not a reason to increase risk.
 
-### 2. Gold kill-zone scalp
+## Verification table
 
-1. Use previous completed EAT-day high and low as liquidity references; the
-   first day in a sample is intentionally untradeable until a reference
-   exists.
-2. In London or New York kill zone, a bullish setup sweeps the prior low and
-   closes back above it. A bearish setup sweeps the prior high and closes
-   back below it.
-3. A later candle must displace through the preceding candle's high/low in
-   the sweep direction and have body size at least `displacement_atr * ATR`.
-   ATR uses prior observed ranges only; there is no look-ahead.
-4. The sweep expires after `confirmation_bars` (default 3). Entry is the
-   displacement close; stop is beyond the sweep extreme; target is 1.5R.
-5. At most one trade per kill zone. An optional absolute `spread` field is
-   rejected above `max_spread`. The implementation does not pretend to know
-   news, fills, or broker spread when those fields are absent; production
-   callers must add those gates.
+| Strategy | Public data now | Required data/token | 200-trade gate |
+|---|---|---|---|
+| GBPUSD London ORB | No verified public stream in this pack | OANDA practice token Mel creates | 200 trades minimum |
+| USDJPY Asian range | No verified public stream in this pack | OANDA practice token Mel creates | 200 trades minimum |
+| XAUUSD killzone FVG | No verified public stream in this pack | OANDA practice token Mel creates, live spread and rolling median | 200 trades minimum |
+| SOL Binance futures | Binance klines = yes | Funding and BTC dump feed/check | 200 trades minimum |
+| NAS100 ORB | Excluded: US cash open is 18:30 EAT | None | Not applicable |
 
-### 3. SOL micro scalp
-
-1. Use the fixed 15:30-18:00 EAT window (12:30-15:00 UTC) so this crypto
-   window does not drift with London/New York DST.
-2. Maintain session VWAP from positive-volume bars and fast/slow EMA defaults
-   of 9/21. Long requires close above VWAP, fast EMA above slow EMA, and a
-   break of the previous candle high. Short is mirrored below VWAP/EMAs and
-   the previous low.
-3. Require at least `min_volume` and, when supplied, reject spread above
-   `max_spread`. Stop distance is `0.8 * ATR` (or a conservative fallback for
-   a cold start); target is 1.2R.
-4. Limit to three trades per EAT day with a three-bar cooldown. Never widen a
-   stop, average down, or infer leverage, quantity, liquidation, or fees.
-
-## Risk policy (mandatory before live use)
-
-- Treat these as research/paper signals, not financial advice or a promise of
-  edge. Start in replay, then paper trading, then the smallest permitted
-  live size only after verification.
-- Size from the actual stop: `quantity = account_risk_cash / abs(entry-stop)`.
-  Include commission, spread, slippage, funding/borrow cost, and contract
-  multiplier. A signal's R target is not a guaranteed fill.
-- A conservative initial policy is 0.25%-0.50% account risk per trade, 1%
-  maximum realized daily loss, one open position per symbol, and no more than
-  two correlated positions. Stop for the day after the loss limit; do not
-  martingale, revenge trade, or move a stop farther away.
-- Reject stale/out-of-session candles, impossible OHLC, non-positive risk,
-  missing volume where required, excessive spread, abnormal range, and any
-  duplicate signal. Add an economic-calendar blackout for high-impact USD,
-  GBP, and gold events; this code cannot discover news by itself.
-- For crypto, separately enforce exchange maintenance, liquidation distance,
-  leverage, funding, mark/index-price divergence, and websocket freshness.
-  For XAUUSD/FX, separately enforce lot size, session liquidity, and broker
-  trading hours.
-
-## Verification checklist
-
-1. Syntax/import check with no third-party packages:
-
-   ```bash
-   python -m compileall -q quant src
-   python - <<'PY'
-   from quant.strategies import AsianRangeBreakout, GoldKillzoneScalp, SolMicroScalp
-   for cls in (AsianRangeBreakout, GoldKillzoneScalp, SolMicroScalp):
-       s = cls(); assert hasattr(s, "next") and hasattr(s, "fit") and hasattr(s, "evaluate")
-   print("imports and interfaces ok")
-   PY
-   ```
-
-2. Feed deterministic synthetic candles with aware UTC timestamps. Assert the
-   Asian setup cannot signal before its range is complete, each strategy keeps
-   its stated daily/session cap, every signal has positive stop distance, and
-   every timestamp is in its configured window.
-3. Test a London winter date and a London summer date, and the corresponding
-   New York dates. Compare `astimezone(ZoneInfo(...))` rather than hard-coded
-   UTC offsets. Include the US/UK DST transition weeks and the Asian range's
-   UTC-date crossing.
-4. Run `run_walk_forward` from
-   `kyla_quant.backtest.backtesting_py_runner` with a validated non-zero cost
-   model and enough chronological observations for the minimum-cycle gate.
-   Keep train and test data strictly time ordered; never fit on the test set.
-5. Verify no look-ahead: ATR/reference levels use only prior bars, a breakout
-   uses a closed candle, and the runner's test result is out of sample.
-6. Report trade count, win rate, expectancy after costs, max drawdown, daily
-   loss breaches, average slippage, rejected signals, and results separately
-   for winter/summer and each symbol. Do not promote based on win rate alone;
-   require a pre-declared out-of-sample threshold and a forward paper period.
-7. Log input timestamp, normalized UTC timestamp, session, reference levels,
-   spread/volume, entry/stop/target, rejection reason, fill, fees, and code
-   commit SHA so every signal can be replayed.
+No strategy is promoted on win rate alone. Log timestamps, normalized EAT/UTC time, levels, spread/median, funding, fees, rejection reasons, fills and this commit SHA; keep train/test data chronological and out of sample.
