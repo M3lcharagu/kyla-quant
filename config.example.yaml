@@ -1,0 +1,47 @@
+# Copy to config.local.yaml (ignored) and fill only with non-secret operational values.
+project:
+  name: kyla-quant
+  timezone: UTC
+  mode: research  # research | paper | live (live is intentionally unsupported here)
+  approval: MEL_APPROVAL_REQUIRED
+
+venues:
+  oanda:
+    environment: practice
+    account_id: YOUR_OANDA_PRACTICE_ACCOUNT_ID
+    token_env: OANDA_TOKEN
+  binance:
+    environment: testnet_or_research_only
+    api_key_env: BINANCE_API_KEY
+    api_secret_env: BINANCE_API_SECRET
+  hyperliquid:
+    wallet_env: HYPERLIQUID_WALLET_PLACEHOLDER
+    private_key_env: HYPERLIQUID_PRIVATE_KEY_PLACEHOLDER
+
+market:
+  symbols: [YOUR_SYMBOL]
+  timeframe: YOUR_TIMEFRAME
+  max_staleness_seconds: 120
+  event_lock_minutes: 30
+  session_timezone: UTC
+
+risk:
+  risk_per_trade_fraction: 0.0025
+  max_risk_per_trade_fraction: 0.005
+  max_daily_loss_fraction: 0.01
+  max_trades_per_day: 3
+  cooldown_minutes: 30
+  funded_account_default: true
+  martingale: false
+
+backtest:
+  minimum_cycles: 200
+  train_fraction: 0.7
+  spread_bps: YOUR_SPREAD_BPS
+  slippage_bps: YOUR_SLIPPAGE_BPS
+  commission_bps: YOUR_COMMISSION_BPS
+
+journal:
+  sqlite_path: data/kyla_quant.sqlite3
+
+# TODO: replace every YOUR_ value and document the evidence for each assumption.
