@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Secrets and local configuration
+.env
+.env.*
+config.local.yaml
+config.*.local.yaml
+*.pem
+*.key
+secrets/
+
+# Research outputs and local state
+*.db
+*.sqlite
+*.sqlite3
+data/raw/
+data/cache/
+reports/
+logs/
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Docker
+.docker/
