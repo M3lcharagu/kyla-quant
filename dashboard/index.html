@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0d0d" />
+  <meta name="description" content="KYLA v0.2 — a Kilimani research operations dashboard prototype." />
+  <title>KYLA / v0.2</title>
+  <style>
+    :root {
+      --ink: #f5f0e6;
+      --muted: #a6a49a;
+      --faint: #676a63;
+      --line: rgba(231, 224, 206, .13);
+      --glass: rgba(18, 22, 21, .72);
+      --glass-strong: rgba(14, 17, 16, .91);
+      --lime: #d4f36a;
+      --lime-dim: #7d9340;
+      --gold: #e8b871;
+      --cyan: #7ce4d0;
+      --red: #fa7470;
+      --bg: #090b0b;
+      --serif: Georgia, 'Times New Roman', serif;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--bg); color: var(--ink); }
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: var(--sans);
+      background:
+        radial-gradient(circle at 84% 15%, rgba(193, 225, 111, .10), transparent 24rem),
+        radial-gradient(circle at 12% 60%, rgba(35, 90, 75, .10), transparent 30rem),
+        var(--bg);
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .app-shell { position: relative; isolation: isolate; min-height: 100vh; }
+    .noise {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .045;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+    }
+    .skyline {
+      position: absolute; z-index: -1; top: 0; left: 0; width: 100%; height: 510px;
+      opacity: .76; pointer-events: none;
+      mask-image: linear-gradient(to bottom, black 35%, transparent 100%);
+    }
+    .skyline svg { width: 100%; height: 100%; display: block; }
+    .topbar {
+      width: min(1500px, calc(100% - 48px)); margin: 0 auto; height: 74px;
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .wordmark { display: flex; align-items: center; gap: 13px; letter-spacing: .23em; font-size: 12px; font-weight: 700; }
+    .mark { width: 28px; height: 28px; position: relative; display: grid; place-items: center; border: 1px solid rgba(212,243,106,.55); border-radius: 50%; color: var(--lime); font-family: var(--serif); font-size: 14px; letter-spacing: 0; }
+    .mark::after { content: ''; position: absolute; width: 6px; height: 6px; border: 1px solid var(--lime); transform: rotate(45deg); }
+    .topbar-right { display: flex; align-items: center; gap: 18px; color: var(--muted); font: 10px var(--mono); text-transform: uppercase; letter-spacing: .13em; }
+    .status-live { display: inline-flex; align-items: center; gap: 7px; color: var(--ink); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 12px rgba(212,243,106,.8); }
+    .version { color: var(--lime); padding: 6px 9px; border: 1px solid rgba(212,243,106,.24); border-radius: 3px; }
+    main { width: min(1500px, calc(100% - 48px)); margin: 0 auto; padding: 76px 0 54px; }
+    .eyebrow { color: var(--lime); font: 10px var(--mono); letter-spacing: .2em; text-transform: uppercase; margin-bottom: 18px; }
+    .hero { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, .8fr); gap: 52px; align-items: end; margin-bottom: 50px; }
+    h1 { margin: 0; max-width: 780px; font-family: var(--serif); font-weight: 400; font-size: clamp(50px, 8vw, 108px); line-height: .88; letter-spacing: -.065em; }
+    h1 em { color: var(--lime); font-style: italic; }
+    .hero-note { max-width: 330px; margin: 0 0 5px auto; color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .hero-note strong { display: block; color: var(--ink); font: 10px var(--mono); letter-spacing: .18em; text-transform: uppercase; margin-bottom: 14px; }
+    .metric-rail { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 30px; }
+    .metric { min-height: 82px; padding: 19px 20px 16px 0; border-right: 1px solid var(--line); }
+    .metric:not(:first-child) { padding-left: 20px; }
+    .metric:last-child { border-right: 0; }
+    .metric-label { color: var(--faint); font: 9px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+    .metric-value { margin-top: 7px; color: var(--ink); font-family: var(--serif); font-size: 23px; }
+    .metric-value.lime { color: var(--lime); }
+    .section-head { display: flex; align-items: end; justify-content: space-between; margin: 0 0 15px; }
+    .section-head h2 { margin: 0; font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; }
+    .section-head span { color: var(--faint); font: 10px var(--mono); }
+    .agents { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 9px; }
+    .agent-card {
+      min-height: 196px; padding: 16px 14px; display: flex; flex-direction: column; justify-content: space-between;
+      background: linear-gradient(145deg, rgba(31, 36, 32, .82), rgba(13, 16, 15, .83));
+      border: 1px solid var(--line); border-radius: 4px; transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .agent-card:hover { transform: translateY(-4px); border-color: rgba(212,243,106,.42); background: linear-gradient(145deg, rgba(47, 55, 45, .92), rgba(14, 18, 16, .9)); }
+    .agent-top { display: flex; justify-content: space-between; align-items: center; }
+    .avatar { width: 35px; height: 35px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(232,184,113,.48); color: var(--gold); font: 11px var(--mono); }
+    .agent-state { display: flex; align-items: center; gap: 6px; color: var(--muted); font: 9px var(--mono); text-transform: uppercase; }
+    .agent-state .dot { width: 5px; height: 5px; box-shadow: none; }
+    .agent-state.paused .dot { background: var(--gold); box-shadow: 0 0 8px rgba(232,184,113,.5); }
+    .agent-name { margin: 20px 0 5px; color: var(--ink); font-family: var(--serif); font-size: 18px; }
+    .agent-role { color: var(--muted); font-size: 11px; line-height: 1.3; }
+    .tag { align-self: flex-start; margin-top: 14px; padding: 5px 7px; border: 1px solid rgba(231,224,206,.13); border-radius: 2px; color: var(--faint); font: 8px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.34fr) minmax(290px, .66fr); gap: 9px; margin-top: 38px; }
+    .panel { background: var(--glass); border: 1px solid var(--line); border-radius: 4px; }
+    .panel-head { min-height: 53px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+    .panel-title { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
+    .panel-meta { color: var(--faint); font: 9px var(--mono); }
+    .console { min-height: 236px; padding: 18px; color: var(--muted); font: 11px/1.8 var(--mono); }
+    .console-line { display: flex; gap: 10px; }
+    .console-line .prompt { color: var(--lime); }
+    .console-line .response { color: var(--ink); }
+    .console-line.dim { color: var(--faint); }
+    .command-row { display: flex; align-items: center; gap: 10px; padding: 0 18px; height: 52px; border-top: 1px solid var(--line); background: rgba(0,0,0,.14); }
+    .command-prompt { color: var(--lime); font: 12px var(--mono); }
+    #command { flex: 1; min-width: 0; outline: none; border: 0; color: var(--ink); background: transparent; font: 11px var(--mono); }
+    #command::placeholder { color: #61665d; }
+    .send { padding: 5px 8px; cursor: pointer; border: 1px solid rgba(212,243,106,.25); border-radius: 2px; color: var(--lime); background: transparent; font: 9px var(--mono); text-transform: uppercase; }
+    .send:hover { background: rgba(212,243,106,.09); }
+    .watchlist { padding: 4px 18px 12px; }
+    .watch-row { display: flex; align-items: center; justify-content: space-between; min-height: 48px; border-bottom: 1px solid rgba(231,224,206,.08); }
+    .watch-row:last-child { border: 0; }
+    .ticker { display: flex; align-items: center; gap: 10px; }
+    .ticker-symbol { color: var(--ink); font: 11px var(--mono); }
+    .ticker-name { color: var(--faint); font-size: 10px; }
+    .ticker-value { text-align: right; font: 11px var(--mono); }
+    .up { color: var(--lime); } .down { color: var(--red); }
+    footer { width: min(1500px, calc(100% - 48px)); margin: 0 auto; padding: 17px 0 30px; display: flex; justify-content: space-between; color: var(--faint); font: 9px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    @media (max-width: 1100px) { .agents { grid-template-columns: repeat(4, 1fr); } .agent-card { min-height: 180px; } }
+    @media (max-width: 760px) { .topbar, main, footer { width: min(100% - 30px, 600px); } .topbar { height: 62px; } .topbar-right .hide-mobile { display: none; } main { padding-top: 58px; } .hero { grid-template-columns: 1fr; gap: 26px; margin-bottom: 36px; } .hero-note { margin: 0; max-width: 410px; } .metric-rail { grid-template-columns: repeat(2, 1fr); } .metric:nth-child(2) { border-right: 0; } .metric:nth-child(-n+2) { border-bottom: 1px solid var(--line); } .metric:not(:first-child) { padding-left: 15px; } .metric { padding-left: 0; } .agents { grid-template-columns: repeat(2, 1fr); } .workspace { grid-template-columns: 1fr; } footer { display: block; line-height: 2; } }
+    @media (max-width: 390px) { .agents { grid-template-columns: 1fr 1fr; gap: 7px; } .agent-card { padding: 13px 11px; } .agent-name { font-size: 16px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="noise" aria-hidden="true"></div>
+    <div class="skyline" aria-hidden="true">
+      <svg viewBox="0 0 1440 510" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="skyFade" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#26332b" stop-opacity=".72"/><stop offset="1" stop-color="#0b0d0d" stop-opacity="0"/></linearGradient></defs>
+        <path fill="url(#skyFade)" d="M0 0h1440v510H0z" opacity=".16"/>
+        <g fill="#16201c" stroke="#5c6a57" stroke-opacity=".24" stroke-width="1">
+          <path d="M0 329h41V278h43v51h14V213h51v116h30V259h24v70h43V179h35v150h19V240h61v89h25V293h44v36h38V221h46v108h26V264h32v65h37V198h21v131h28V247h55v82h16V165h38v164h24v-99h28v99h43V225h27v104h27V274h47v55h22V195h35v134h24V249h57v80h28V218h31v111h21V280h50v49h20V171h47v158h27v-90h35v90h20V234h49v95h31V280h57v49h21V209h36v120h25V254h46v75h29V183h44v146h42V224h32v105h28v-58h33v58h42V278h50v51h50v181H0z"/>
+        </g>
+        <g fill="#b8d766" opacity=".12">
+          <circle cx="165" cy="302" r="2"/><circle cx="221" cy="232" r="2"/><circle cx="487" cy="260" r="2"/><circle cx="671" cy="211" r="2"/><circle cx="742" cy="281" r="2"/><circle cx="1058" cy="235" r="2"/><circle cx="1230" cy="205" r="2"/><circle cx="1360" cy="246" r="2"/>
+        </g>
+        <path d="M0 406 C230 388 320 424 560 408 S930 390 1120 412 S1320 400 1440 408" fill="none" stroke="#b4d368" stroke-opacity=".14"/>
+      </svg>
+    </div>
+    <header class="topbar">
+      <div class="wordmark"><span class="mark">K</span><span>KYLA</span></div>
+      <div class="topbar-right"><span class="status-live"><i class="dot"></i> online</span><span class="hide-mobile">kilimani / 01:42 EAT</span><span class="version">v0.2</span></div>
+    </header>
+    <main>
+      <section class="hero">
+        <div><div class="eyebrow">Research operations / Nairobi</div><h1>The quiet edge<br />of <em>conviction.</em></h1></div>
+        <p class="hero-note"><strong>Private beta · command deck</strong>Seven specialist agents, one deliberate loop. KYLA turns a noisy market into a room you can think inside.</p>
+      </section>
+      <section class="metric-rail" aria-label="System status">
+        <div class="metric"><div class="metric-label">Mac / local node</div><div class="metric-value lime">Connected</div></div>
+        <div class="metric"><div class="metric-label">Sandbox</div><div class="metric-value">Paper only</div></div>
+        <div class="metric"><div class="metric-label">Triggers</div><div class="metric-value">04 armed</div></div>
+        <div class="metric"><div class="metric-label">Quant engine</div><div class="metric-value">Standing by</div></div>
+      </section>
+      <section aria-labelledby="agents-title">
+        <div class="section-head"><h2 id="agents-title">The room / agent network</h2><span>07 operators in orbit</span></div>
+        <div class="agents">
+          <article class="agent-card"><div class="agent-top"><div class="avatar">OR</div><div class="agent-state"><i class="dot"></i> ready</div></div><div><div class="agent-name">Orion</div><div class="agent-role">Market cartographer</div><div class="tag">regime</div></div></article>
+          <article class="agent-card"><div class="agent-top"><div class="avatar">SL</div><div class="agent-state"><i class="dot"></i> ready</div></div><div><div class="agent-name">Sable</div><div class="agent-role">Risk architect</div><div class="tag">risk</div></div></article>
+          <article class="agent-card"><div class="agent-top"><div class="avatar">CH</div><div class="agent-state"><i class="dot"></i> ready</div></div><div><div class="agent-name">Chroma</div><div class="agent-role">Signal curator</div><div class="tag">signals</div></div></article>
+          <article class="agent-card"><div class="agent-top"><div class="avatar">MN</div><div class="agent-state"><i class="dot"></i> ready</div></div><div><div class="agent-name">Maven</div><div class="agent-role">Macro lens</div><div class="tag">macro</div></div></article>
+          <article class="agent-card"><div class="agent-top"><div class="avatar">VA</div><div class="agent-state"><i class="dot"></i> ready</div></div><div><div class="agent-name">Vale</div><div class="agent-role">Execution scout</div><div class="tag">execution</div></div></article>
+          <article class="agent-card"><div class="agent-top"><div class="avatar">EA</div><div class="agent-state paused"><i class="dot"></i> paused</div></div><div><div class="agent-name">Echo</div><div class="agent-role">Journal keeper</div><div class="tag">review</div></div></article>
+          <article class="agent-card"><div class="agent-top"><div class="avatar">LU</div><div class="agent-state"><i class="dot"></i> ready</div></div><div><div class="agent-name">Lumen</div><div class="agent-role">Portfolio pulse</div><div class="tag">portfolio</div></div></article>
+        </div>
+      </section>
+      <section class="workspace" aria-label="Command and watchlist">
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Command line</span><span class="panel-meta">local / sandbox</span></div>
+          <div class="console" id="console" aria-live="polite"><div class="console-line dim">KYLA shell · ready for a thought</div><div class="console-line"><span class="prompt">›</span><span>Try <span class="response">help</span> to see available commands.</span></div></div>
+          <form class="command-row" id="command-form"><span class="command-prompt">›</span><input id="command" autocomplete="off" placeholder="Ask KYLA something..." aria-label="Command input" /><button class="send" type="submit">Run</button></form>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Quiet watchlist</span><span class="panel-meta">paper / indicative</span></div>
+          <div class="watchlist">
+            <div class="watch-row"><div class="ticker"><span class="ticker-symbol">SPY</span><span class="ticker-name">S&amp;P 500</span></div><div class="ticker-value up">+0.38%</div></div>
+            <div class="watch-row"><div class="ticker"><span class="ticker-symbol">QQQ</span><span class="ticker-name">Nasdaq 100</span></div><div class="ticker-value up">+0.72%</div></div>
+            <div class="watch-row"><div class="ticker"><span class="ticker-symbol">BTC</span><span class="ticker-name">Bitcoin</span></div><div class="ticker-value down">−1.14%</div></div>
+            <div class="watch-row"><div class="ticker"><span class="ticker-symbol">US10Y</span><span class="ticker-name">10Y yield</span></div><div class="ticker-value down">−0.06%</div></div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer><span>KYLA / a room for better decisions</span><span>Design prototype · no live execution</span></footer>
+  </div>
+  <script>
+    (() => {
+      const form = document.getElementById('command-form');
+      const input = document.getElementById('command');
+      const consoleEl = document.getElementById('console');
+      const help = 'Available: help · rooms · status · watchlist';
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const value = input.value.trim();
+        if (!value) return;
+        const entered = document.createElement('div');
+        entered.className = 'console-line';
+        entered.innerHTML = '<span class="prompt">›</span><span>' + escapeHtml(value) + '</span>';
+        consoleEl.appendChild(entered);
+        const reply = document.createElement('div');
+        reply.className = 'console-line';
+        reply.innerHTML = /^help(?:\s|$)/i.test(value)
+          ? '<span class="prompt">·</span><span class="response">' + help + '</span>'
+          : '<span class="prompt">·</span><span>Prototype shell: connect a room or ask for <span class="response">help</span>.</span>';
+        consoleEl.appendChild(reply);
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+        input.value = '';
+      });
+      function escapeHtml(value) { return value.replace(/[&<>\"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#039;' }[char])); }
+    })();
+  </script>
+</body>
+</html>
