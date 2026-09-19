@@ -2,24 +2,31 @@
 """Diagnose why the SOL micro-scalper emits few or no raw signals.
 
 This script deliberately uses only the Python standard library for HTTP/JSON and
-imports the repository's stdlib-only SolMicroScalp.  It downloads about 5,000
+imports the repository's stdlib-only SolMicroScalp. It downloads about 5,000
 SOLUSDT spot 5-minute candles in Binance API-sized pages, then feeds every
 candle to the strategy with funding_rate=0.0.
 
 The rejection counters mirror the actual order and conditions in
-quant/strategies/sol_micro_scalp.py.  The source has no time-of-day or volume
+quant/strategies/sol_micro_scalp.py. The source has no time-of-day or volume
 filter, so those two counters are intentionally always zero; they are printed
-so a caller does not mistake an absent filter for a passing filter.  The
+so a caller does not mistake an absent filter for a passing filter. The
 strategy's ATR fallback is the mean of the previous up-to-14 true candle
 ranges (in this source it is simply high-low), and its previous candle state is
 updated even when an earlier filter rejects the current candle.
 
 This is a signal diagnostic, not a fill/backtest: it does not apply stops,
-targets, max-hold exits, fees, or Backtester's position handling.  Binance spot
+targets, max-hold exits, fees, or Backtester's position handling. Binance spot
 candles are used because the public endpoint is dependency-free; the strategy
 itself is labeled for futures, and funding is neutralized by the requested
 0.0 value.
 """
+
+import ssl
+import urllib.request
+
+# Demo-only for Mel's Catalina box; real use should verify certificates.
+ctx = ssl._create_unverified_context()
+urllib.request.install_opener(urllib.request.build_opener(urllib.request.HTTPSHandler(context=ctx)))
 
 import json
 import os
@@ -30,20 +37,17 @@ from datetime import datetime, timezone
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from quant.strategies.sol_micro_scalp import Config, SolMicroScalp
 
-
 API_URL = "https://api.binance.com/api/v3/klines"
 SYMBOL = "SOLUSDT"
 INTERVAL = "5m"
 PAGE_SIZE = 1000
 TARGET_CANDLES = 5000
-
 
 def fetch_page(end_time=None):
     params = {"symbol": SYMBOL, "interval": INTERVAL, "limit": PAGE_SIZE}
@@ -58,7 +62,6 @@ def fetch_page(end_time=None):
     if not isinstance(payload, list):
         raise RuntimeError("Binance returned an unexpected kline payload")
     return payload
-
 
 def load_recent_klines():
     """Page backward by open time, then return the newest TARGET_CANDLES rows."""
@@ -84,10 +87,9 @@ def load_recent_klines():
     rows = [rows_by_open_time[key] for key in sorted(rows_by_open_time)]
     return rows[-TARGET_CANDLES:]
 
-
 def candle_from_row(row):
     # This mapping intentionally matches the fields accepted by SolMicroScalp:
-    # timestamp/open/high/low/close plus funding_rate.  Values are numeric,
+    # timestamp/open/high/low/close plus funding_rate. Values are numeric,
     # and timestamp is an aware UTC datetime accepted by the strategy's _ts().
     return {
         "timestamp": datetime.fromtimestamp(int(row[0]) / 1000.0, tz=timezone.utc),
@@ -99,12 +101,11 @@ def candle_from_row(row):
         "funding_rate": 0.0,
     }
 
-
 def expected_rejection(strategy, candle):
     """Return the first source-level entry gate rejecting this candle.
 
     This is evaluated immediately before strategy.next(), while strategy state
-    still represents the prior candle.  It intentionally follows next():
+    still represents the prior candle. It intentionally follows next():
     funding, dump flags, ATR compression, previous-candle warmup, then the
     one-candle breakout/body-direction momentum test.
     """
@@ -142,7 +143,6 @@ def expected_rejection(strategy, candle):
     if not (bullish_breakout or bearish_breakout):
         return "momentum"
     return None
-
 
 def diagnose(rows):
     strategy = SolMicroScalp(Config())
@@ -186,7 +186,6 @@ def diagnose(rows):
 
     return counts, long_signals, short_signals, mirror_mismatches
 
-
 def main():
     try:
         rows = load_recent_klines()
@@ -219,7 +218,6 @@ def main():
     print("notes: spot candles and neutral funding diagnose raw signals only; this is not a "
           "futures fill/backtest and does not count trades or apply hold/exit behavior.")
     return 0
-
 
 if __name__ == "__main__":
     sys.exit(main())
