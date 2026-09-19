@@ -5,6 +5,13 @@ import os
 import sys
 from datetime import timedelta
 
+# Demo-only workaround for Mel's Catalina box; real use should verify certificates.
+import ssl
+import urllib.request
+
+ctx = ssl._create_unverified_context()
+opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=ctx))
+urllib.request.install_opener(opener)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
@@ -116,7 +123,7 @@ def main():
     curve_end = curve[-1] if curve else final_equity
 
     print("SOLUSDT 5m backtest")
-    print("-------------------")
+    print("--------------------")
     print("candles: {}".format(len(candles)))
     print(
         "cost model: BINANCE_SOL_MAKER "
