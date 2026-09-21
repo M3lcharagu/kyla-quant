@@ -1,12 +1,20 @@
 name: Nightly Backtest
 
 on:
+  push:
+    branches: [main]
+    # Prevent the docs-only bot commit from triggering itself again.
+    paths-ignore:
+      - docs/STRATEGY_LIBRARY.md
   schedule:
-    - cron: "0 19 * * *"
+    - cron: "0 19 * * *" # Nairobi 22:00
   workflow_dispatch:
 
 permissions:
   contents: write
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   backtest:
@@ -14,8 +22,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -27,23 +33,19 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run strategy factory backtest
-        run: python scripts/strategy_factory.py
+        run: python scripts/strategy_factory.py --symbol SOLUSDT --interval 5m --limit 20000
 
-      - name: Commit and push nightly artifacts
-        if: always()
+      - name: Commit and push updated strategy library
+        if: ${{ always() }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "kyla-bot"
           git config user.email "kyla-bot@users.noreply.github.com"
-          git add -f docs/STRATEGY_LIBRARY.md
-          if [ -d results ]; then
-            git add -f results
-          fi
-          if git diff --cached --quiet; then
-            echo "No nightly backtest artifacts changed."
+          git add docs/STRATEGY_LIBRARY.md
+          if git diff --cached --quiet -- docs/STRATEGY_LIBRARY.md; then
+            echo "No strategy library changes to commit."
             exit 0
           fi
-          git commit -m "chore: update nightly backtest artifacts"
-          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git commit -m "chore: update strategy library"
           git push origin HEAD:main
