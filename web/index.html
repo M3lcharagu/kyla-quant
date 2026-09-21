@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta name="description" content="KYLA quant research, paper trading, and product hub.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <title>KYLA / Quant OS</title>
+  <style>
+    :root { --bg:#090909; --panel:#121212; --panel-2:#171717; --line:#2b271d; --gold:#f5bd45; --gold-2:#ffe0 eighty; --text:#f4f1e9; --muted:#9b968b; --green:#57d68a; --red:#ff7777; --blue:#8ab4ff; }
+    * { box-sizing:border-box; }
+    html { background:var(--bg); color:var(--text); scroll-behavior:smooth; }
+    body { margin:0; min-height:100vh; background:radial-gradient(circle at 50% -10%, #2a210e 0, var(--bg) 38rem); font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    a { color:var(--gold); }
+    button, a { -webkit-tap-highlight-color:transparent; }
+    .shell { width:min(100%, 760px); margin:0 auto; padding:env(safe-area-inset-top) 16px calc(32px + env(safe-area-inset-bottom)); }
+    header { padding:24px 0 14px; display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+    .eyebrow, .label { color:var(--gold); font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+    h1,h2,h3,p { margin-top:0; }
+    h1 { font-size:clamp(2.2rem, 12vw, 4.5rem); line-height:.95; letter-spacing:-.07em; margin:8px 0 10px; }
+    h2 { font-size:1.45rem; letter-spacing:-.03em; margin:0 0 6px; }
+    h3 { font-size:1rem; margin:0 0 4px; }
+    .lede { color:var(--muted); max-width:44rem; margin-bottom:0; }
+    .mark { display:grid; place-items:center; width:48px; height:48px; border:1px solid #67501f; border-radius:16px; color:var(--gold); font-weight:900; letter-spacing:.08em; }
+    nav { position:sticky; top:0; z-index:5; display:flex; gap:7px; overflow:auto; padding:8px 0 12px; background:linear-gradient(var(--bg) 70%, transparent); scrollbar-width:none; }
+    nav::-webkit-scrollbar { display:none; }
+    .tab { flex:0 0 auto; border:1px solid var(--line); border-radius:999px; background:var(--panel); color:var(--muted); padding:10px 14px; font:inherit; font-size:12px; font-weight:800; letter-spacing:.08em; }
+    .tab.active, .tab:focus-visible { background:var(--gold); border-color:var(--gold); color:#171109; outline:none; }
+    main { display:grid; gap:14px; }
+    .view { display:none; gap:14px; }
+    .view.active { display:grid; }
+    .card { background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015)); border:1px solid var(--line); border-radius:20px; padding:18px; box-shadow:0 16px 40px rgba(0,0,0,.16); }
+    .card.gold { border-color:#604918; background:linear-gradient(145deg,#211a0b,#11100d); }
+    .card-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:14px; }
+    .muted { color:var(--muted); }
+    .tiny { font-size:12px; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .metric { background:var(--panel-2); border:1px solid var(--line); border-radius:15px; padding:14px; min-height:92px; }
+    .metric strong { display:block; margin-top:6px; color:var(--text); font-size:1.6rem; letter-spacing:-.04em; }
+    .metric small { color:var(--muted); }
+    .status { display:inline-flex; align-items:center; gap:7px; border-radius:999px; padding:6px 9px; background:#1d2a20; color:var(--green); font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .status.pending { background:#292315; color:var(--gold); }
+    .status.fail { background:#321a1a; color:var(--red); }
+    .dot { width:7px; height:7px; border-radius:50%; background:currentColor; }
+    .table-wrap { overflow:auto; margin:0 -4px; }
+    table { width:100%; min-width:640px; border-collapse:collapse; font-size:12px; }
+    th,td { padding:10px 8px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+    th { color:var(--muted); font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
+    .verdict { font-weight:900; letter-spacing:.06em; }
+    .verdict.pass { color:var(--green); } .verdict.fail { color:var(--red); } .verdict.inconclusive { color:var(--gold); }
+    .schedule { display:grid; gap:8px; margin:0; padding:0; list-style:none; }
+    .schedule li { display:flex; justify-content:space-between; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); }
+    .schedule li:last-child { border-bottom:0; padding-bottom:0; }
+    .schedule b { color:var(--gold); font-size:12px; white-space:nowrap; }
+    .product-grid { display:grid; gap:10px; }
+    .product { display:flex; align-items:center; justify-content:space-between; gap:14px; background:var(--panel-2); border:1px solid var(--line); border-radius:16px; padding:15px; text-decoration:none; color:var(--text); }
+    .product:hover { border-color:#8b6725; }
+    .arrow { color:var(--gold); font-size:1.3rem; }
+    .button { display:inline-block; border-radius:999px; padding:10px 14px; background:var(--gold); color:#171109; text-decoration:none; font-weight:850; }
+    .button.alt { background:transparent; color:var(--gold); border:1px solid #6e531d; }
+    .notice { border-left:3px solid var(--gold); color:var(--muted); padding:8px 0 8px 12px; }
+    footer { color:var(--muted); padding:24px 2px 0; font-size:12px; }
+    @media (min-width:620px) { .grid { grid-template-columns:repeat(4,minmax(0,1fr)); } .product-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div><div class="eyebrow">Profit-first / consistency-second</div><h1>KYLA</h1><p class="lede">A phone-first control surface for research, paper execution, and disciplined review.</p></div>
+      <div class="mark" aria-label="KYLA">K</div>
+    </header>
+    <nav aria-label="KYLA sections">
+      <button class="tab active" data-view="quant">QUANT</button>
+      <button class="tab" data-view="autopilot">AUTOPILOT</button>
+      <button class="tab" data-view="hub">3D HUB</button>
+      <button class="tab" data-view="products">PRODUCTS</button>
+    </nav>
+    <main>
+      <section id="quant" class="view active" aria-labelledby="quant-title">
+        <div class="card gold"><div class="card-head"><div><div class="eyebrow">Research console</div><h2 id="quant-title">Quant overview</h2></div><span class="status pending" id="data-status"><span class="dot"></span>loading</span></div><div class="grid" id="kpis"><div class="metric"><small>Paper trades</small><strong>—</strong></div><div class="metric"><small>Win rate</small><strong>—</strong></div><div class="metric"><small>Strategies passing</small><strong>—</strong></div><div class="metric"><small>Last backtest</small><strong>—</strong></div></div></div>
+        <div class="card"><div class="card-head"><div><div class="eyebrow">Strategy library</div><h2>Evidence table</h2></div><a class="tiny" href="../docs/STRATEGY_LIBRARY.md">Open source</a></div><p class="muted tiny" id="strategy-note">Loading docs/STRATEGY_LIBRARY.md…</p><div class="table-wrap"><table><thead><tr><th>Strategy</th><th>Timeframe</th><th>Trades</th><th>Win rate</th><th>PF</th><th>Verdict</th><th>Notes</th></tr></thead><tbody id="strategy-table"><tr><td colspan="7" class="muted">Waiting for the strategy library.</td></tr></tbody></table></div></div>
+      </section>
+      <section id="autopilot" class="view" aria-labelledby="autopilot-title">
+        <div class="card gold"><div class="card-head"><div><div class="eyebrow">Paper execution</div><h2 id="autopilot-title">Autopilot</h2></div><span class="status pending" id="paper-status"><span class="dot"></span>checking</span></div><p id="paper-summary" class="muted">Looking for journal/paper_trades.json…</p><div id="paper-detail" class="notice tiny">This dashboard is read-only. It never places orders.</div></div>
+        <div class="card"><div class="eyebrow">Scheduled runs</div><h2>Next windows</h2><ul class="schedule"><li><span>Paper trader <small class="muted">(kill-check)</small></span><b>Every 15m · 09:00–16:00</b></li><li><span>Strategy backtest</span><b>Daily · 22:00</b></li><li><span>Journal report</span><b>Sunday · 18:00</b></li></ul><p class="muted tiny" style="margin:14px 0 0">Times mirror <code>scripts/autopilot.sh</code> and use the host scheduler timezone.</p></div>
+      </section>
+      <section id="hub" class="view" aria-labelledby="hub-title"><div class="card gold"><div class="eyebrow">Spatial interface</div><h2 id="hub-title">3D HUB</h2><p class="lede">The visual command layer lives outside this static PWA. Open the KYLA OS hub when you want the full spatial experience.</p><p><a class="button" href="https://kyla-os.vercel.app" target="_blank" rel="noopener">Open KYLA OS ↗</a></p><p class="muted tiny">Placeholder link: the hub is a separate deployment and may be unavailable while it is being updated.</p></div></section>
+      <section id="products" class="view" aria-labelledby="products-title"><div class="card"><div class="eyebrow">Digital products</div><h2 id="products-title">Build the process</h2><p class="muted">Education and templates for clearer creative and trading workflows. No performance promises.</p><div class="product-grid"><a class="product" href="../products/ai-content-creator-prompt-pack/index.html"><span><strong>AI Content Creator Prompt Pack</strong><small class="muted">56 prompts · $12</small></span><span class="arrow">→</span></a><a class="product" href="../products/trading-journal-checklist-pack/index.html"><span><strong>Trading Journal &amp; Risk Checklist Pack</strong><small class="muted">Journal, sizing, review · $19</small></span><span class="arrow">→</span></a></div></div></section>
+    </main>
+    <footer>KYLA is a research and paper-trading scaffold, not financial advice. <a href="../README.md">Repository notes</a>.</footer>
+  </div>
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const text = (value, fallback = '—') => value === null || value === undefined || value === '' ? fallback : String(value);
+    const escape = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+
+    document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach((item) => item.classList.toggle('active', item === tab));
+      document.querySelectorAll('.view').forEach((view) => view.classList.toggle('active', view.id === tab.dataset.view));
+    }));
+
+    function setKpis(data) {
+      const items = [data.paper_trades, data.win_rate === null ? null : `${data.win_rate}%`, data.strategies_passing, data.last_backtest_date];
+      const labels = ['Paper trades', 'Win rate', 'Strategies passing', 'Last backtest'];
+      $('#kpis').innerHTML = items.map((value, index) => `<div class="metric"><small>${labels[index]}</small><strong>${escape(text(value))}</strong></div>`).join('');
+      const status = $('#data-status');
+      status.className = 'status'; status.innerHTML = '<span class="dot"></span>data ready';
+      if (data.placeholder) { status.className = 'status pending'; status.innerHTML = '<span class="dot"></span>placeholder'; }
+    }
+
+    async function loadDashboard() {
+      try { const response = await fetch('./data/dashboard.json', { cache: 'no-store' }); if (!response.ok) throw new Error('dashboard unavailable'); setKpis(await response.json()); }
+      catch (error) { $('#data-status').className = 'status fail'; $('#data-status').innerHTML = '<span class="dot"></span>offline'; }
+    }
+
+    function renderStrategies(markdown) {
+      const rows = markdown.split(/\r?\n/).filter((line) => line.trim().startsWith('|') && !/^\s*\|?\s*:?-{3}/.test(line));
+      const body = rows.slice(1).map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim())).filter((cells) => cells.length >= 10);
+      if (!body.length) throw new Error('No strategy rows');
+      $('#strategy-table').innerHTML = body.map((cells) => {
+        const verdict = (cells[9] || 'INCONCLUSIVE').toUpperCase();
+        const safeVerdict = ['PASS','FAIL','INCONCLUSIVE'].includes(verdict) ? verdict : 'INCONCLUSIVE';
+        return `<tr><td><strong>${escape(cells[0])}</strong><br><span class="muted tiny">${escape(cells[1])}</span></td><td>${escape(cells[2])}</td><td>${escape(cells[3])}</td><td>${escape(cells[4])}</td><td>${escape(cells[5])}</td><td class="verdict ${safeVerdict.toLowerCase()}">${safeVerdict}</td><td>${escape(cells[10] || '')}</td></tr>`;
+      }).join('');
+      $('#strategy-note').textContent = `${body.length} documented strategies · verdicts are taken from the source table.`;
+    }
+
+    async function loadStrategies() {
+      for (const path of ['../docs/STRATEGY_LIBRARY.md', './docs/STRATEGY_LIBRARY.md']) {
+        try { const response = await fetch(path, { cache: 'no-store' }); if (response.ok) { renderStrategies(await response.text()); return; } } catch (error) { /* try the next hosting layout */ }
+      }
+      $('#strategy-note').textContent = 'Strategy library unavailable offline. The source remains linked above.';
+    }
+
+    function paperRows(payload) {
+      if (Array.isArray(payload)) return payload;
+      if (payload && Array.isArray(payload.trades)) return payload.trades;
+      if (payload && Array.isArray(payload.paper_trades)) return payload.paper_trades;
+      return [];
+    }
+
+    async function loadPaperTrades() {
+      const paths = ['../journal/paper_trades.json', '../paper_trades.json', './data/paper_trades.json'];
+      for (const path of paths) {
+        try {
+          const response = await fetch(path, { cache: 'no-store' });
+          if (!response.ok) continue;
+          const payload = await response.json(); const rows = paperRows(payload);
+          const status = (payload && !Array.isArray(payload) && payload.status) || (rows.length ? 'ACTIVE' : 'READY');
+          $('#paper-status').className = 'status'; $('#paper-status').innerHTML = `<span class="dot"></span>${escape(status)}`;
+          $('#paper-summary').textContent = `${rows.length} paper trade${rows.length === 1 ? '' : 's'} found in ${path}.`;
+          const timestamps = rows.map((row) => row.timestamp || row.created_at || row.closed_at).filter(Boolean).sort();
+          $('#paper-detail').textContent = timestamps.length ? `Latest journal event: ${timestamps[timestamps.length - 1]}.` : 'Journal loaded; no timestamped events found.';
+          return;
+        } catch (error) { /* absent optional journal */ }
+      }
+      $('#paper-status').className = 'status pending'; $('#paper-status').innerHTML = '<span class="dot"></span>awaiting journal';
+      $('#paper-summary').textContent = 'No journal/paper_trades.json is present in the published files yet.';
+      $('#paper-detail').textContent = 'Add the paper-trader export when available; the UI will read it without a build step.';
+    }
+
+    loadDashboard(); loadStrategies(); loadPaperTrades();
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js', { scope: './' }).catch(() => undefined);
+  </script>
+</body>
+</html>

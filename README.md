@@ -1,8 +1,8 @@
 # kyla-quant
 
-**Profit-first, consistency-second.**
+**Profit-first, consistency-second**
 
-`kyla-quant` is a deliberately conservative research, backtesting, paper-execution, journaling, and QA scaffold for systematic market work. It is designed to make assumptions visible, put costs and risk before optimism, and keep live integrations behind explicit gates.
+`kyla-quant` is a deliberately conservative research, backtesting, paper-execution, journaling, and QA scaffold for systematic market work. It is designed to make assumptions visible, put costs and risk before optimization, and keep live integrations behind explicit gates.
 
 > **Disclaimer:** This repository is a scaffold, not a promise of profitability or financial advice. Profitability requires data-quality checks, realistic cost modeling, robust out-of-sample validation, and independent review. Nothing here is investment advice. Use placeholders, paper accounts, and small controlled experiments until evidence supports the next stage.
 
@@ -24,12 +24,13 @@ The arrows are a control flow, not a claim that any adapter is live or productio
 - `src/kyla_quant/paper/` — OANDA practice, Freqtrade dry-run, and Hyperliquid shadow boundaries.
 - `src/kyla_quant/qa/` — R13 rejection checks.
 - `docs/` — specifications and operating notes.
+- `products/` — self-contained digital-product sales pages and fulfillment READMEs.
 
 ## Quick start later (Mac or Docker)
 
 1. Copy `config.example.yaml` to a local, untracked config file.
 2. Install `requirements.txt` in a virtual environment, or build the Docker image.
-3. Keep all credentials as environment variables or a secret manager; never commit them.
+3. Keep all credentials as environment variables or in a secret manager; never commit them.
 4. Run research sequentially, inspect cost assumptions, and archive reports.
 5. Do not advance from research to paper or paper to live without documented Mel approval and a passing R13 gate.
 
@@ -42,15 +43,19 @@ This initial scaffold is intentionally runnable-later-on-Mac/Docker rather than 
 - [ ] Implement a reproducible feature store and regime labels.
 - [ ] Validate sequence definitions on a sufficiently large, leakage-free dataset.
 - [ ] Run 200+ cycles through walk-forward and out-of-sample tests with realistic costs.
-- [ ] Add paper execution reconciliation and daily journal review.
+- [ ] Add paper-execution reconciliation and daily journal review.
 - [ ] Obtain Mel approval for each research→paper and paper→live promotion.
 
 ## Assumptions / TODOs
 
 - Symbols, timeframes, venue credentials, timezone policy, and event calendars are configuration placeholders.
 - Adapter payloads are not guaranteed to match vendor schemas until integration tests are written.
-- The sequence conditions are deterministic research rules, not a claim of edge.
-- Any missing, stale, contradictory, or locked data must fail closed.
+- Sequence conditions are deterministic research rules, not a claim of edge.
+- Missing, stale, contradictory, or locked data must fail closed.
+
+## KYLA mobile PWA
+
+Open the [installable KYLA dashboard](web/) for the phone-first QUANT, AUTOPILOT, 3D HUB, and PRODUCTS views. It is a no-build static PWA; see [`web/README.md`](web/README.md) for iPhone Safari installation, free hosting, icons, and `dashboard.json` update guidance.
 
 ## License
 

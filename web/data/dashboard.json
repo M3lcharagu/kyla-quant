@@ -1,0 +1,9 @@
+{
+  "placeholder": true,
+  "paper_trades": 0,
+  "win_rate": null,
+  "strategies_passing": 0,
+  "last_backtest_date": null,
+  "updated_at": null,
+  "source": "Placeholder values. Overwrite this file after a verified paper-trading or backtest run."
+}
