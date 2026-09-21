@@ -1,0 +1,12 @@
+KYLA Trading Journal Report
+----------------------------
+Net P&L:       0.00
+Trade win %:   0.00%
+Profit factor: 0.00
+Day win %:     0.00%
+Average win:   0.00
+Average loss:  0.00
+Trade count:   0 (0 closed, 0 open)
+Total fees:    0.00
+Expectancy:    0.00 per closed trade
+KYLA Edge:     0.00/100
