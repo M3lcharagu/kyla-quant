@@ -1,11 +1,10 @@
-name: repo digest
+name: repo-digest
 
 on:
+  push:
+    branches: [main]
   schedule:
     - cron: '0 3 * * *'
-  push:
-    branches:
-      - main
 
 permissions:
   contents: write
@@ -14,44 +13,20 @@ jobs:
   update-digest:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v4
 
       - name: Fetch repository digest
-        shell: bash
         run: |
-          set -euo pipefail
           mkdir -p docs
-          url="https://gitingest.com/M3lcharagu/kyla-quant"
-          if ! curl -fsSL -A "Mozilla/5.0" "$url" -o docs/repo-digest.txt; then
-            if ! python3 - "$url" <<'PY'
-import sys
-import urllib.request
+          curl -fsSL --max-time 60 -A 'Mozilla/5.0' https://gitingest.com/M3lcharagu/kyla-quant/llms.txt -o docs/repo-digest.txt || echo "NOTICE: digest fetch failed at $(date -u)" > docs/repo-digest.txt
 
-url = sys.argv[1]
-request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-with urllib.request.urlopen(request) as response:
-    data = response.read()
-with open("docs/repo-digest.txt", "wb") as handle:
-    handle.write(data)
-PY
-            then
-              printf 'NOTICE: Failed to fetch repository digest from %s\n' "$url" > docs/repo-digest.txt
-            fi
-          fi
-
-      - name: Commit changed digest
-        shell: bash
+      - name: Commit and push changes
         run: |
-          set -euo pipefail
-          git config user.name "kyla-bot"
-          git config user.email "kyla-bot@users.noreply.github.com"
+          git config user.name kyla-bot
+          git config user.email kyla-bot@users.noreply.github.com
           git add docs/repo-digest.txt
           if git diff --cached --quiet; then
-            echo "No digest changes"
-          else
-            git commit -m "chore: update repo digest"
-            git push origin HEAD:main
+            exit 0
           fi
+          git commit -m 'chore: update repo digest'
+          git push
