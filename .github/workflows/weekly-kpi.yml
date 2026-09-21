@@ -38,15 +38,16 @@ jobs:
           mkdir -p reports
           python scripts/trade_journal.py report | tee reports/weekly-kpi.txt
 
-      - name: Commit and push KPI and journal artifacts
+      - name: Commit and push KPI report artifact
+        if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f journal/paper_trades.json journal/trades.db reports/weekly-kpi.txt
+          git config user.name "kyla-bot"
+          git config user.email "kyla-bot@users.noreply.github.com"
+          git add -f reports/weekly-kpi.txt
           if git diff --cached --quiet; then
-            echo "No KPI or journal artifact changes to commit."
+            echo "No weekly KPI report changes to commit."
             exit 0
           fi
           git commit -m "chore: update weekly KPI report"

@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   backtest:
@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -26,3 +28,22 @@ jobs:
 
       - name: Run strategy factory backtest
         run: python scripts/strategy_factory.py
+
+      - name: Commit and push nightly artifacts
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "kyla-bot"
+          git config user.email "kyla-bot@users.noreply.github.com"
+          git add -f docs/STRATEGY_LIBRARY.md
+          if [ -d results ]; then
+            git add -f results
+          fi
+          if git diff --cached --quiet; then
+            echo "No nightly backtest artifacts changed."
+            exit 0
+          fi
+          git commit -m "chore: update nightly backtest artifacts"
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin HEAD:main
