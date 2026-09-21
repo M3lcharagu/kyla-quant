@@ -170,7 +170,7 @@ def open_position(
     if killcheck:
         try:
             kill_switch.require_clear("paper_trading")
-        except kill_switch.KillSwitchArmed as exc:
+        except kill_switch.KillSwitchArmed:
             print(f"strategy={strategy} action=blocked reason=kill_switch")
             return False
     entry_price = float(candle.close)
@@ -217,10 +217,10 @@ def close_position(conn, position: Position, candle: Candle, price: float, reaso
     gross = sign * (float(price) - position.entry_price) * position.size
     fees = position.entry_price * position.size * MAKER_FEE_PER_SIDE + float(price) * position.size * MAKER_FEE_PER_SIDE
     net = gross - fees
+    status = "win" if net > 0 else "loss"
     conn.execute(
-        "UPDATE trades SET status='win' if ? > 0 else 'loss', exit_time=?, exit_price=?, fees=?, "
-        "gross_pnl=?, net_pnl=?, notes=? WHERE id=?",
-        (net, iso(candle.timestamp), float(price), fees, gross, net, f"simulated exit; reason={reason}; maker fee per side=0.0002", position.journal_id),
+        "UPDATE trades SET status=?, exit_time=?, exit_price=?, fees=?, gross_pnl=?, net_pnl=?, notes=? WHERE id=?",
+        (status, iso(candle.timestamp), float(price), fees, gross, net, f"simulated exit; reason={reason}; maker fee per side=0.0002", position.journal_id),
     )
     conn.commit()
     print(
@@ -276,13 +276,7 @@ def process_candle(conn, strategies: Dict[str, Any], positions: Dict[str, Positi
     return events
 
 
-def run_cycle(
-    conn,
-    strategies: Dict[str, Any],
-    positions: Dict[str, Position],
-    state_path: Path,
-    killcheck: bool,
-) -> None:
+def run_cycle(conn, strategies: Dict[str, Any], positions: Dict[str, Position], state_path: Path, killcheck: bool) -> None:
     fetched = factory.fetch_paginated(SYMBOL, INTERVAL, DEFAULT_LIMIT)
     candles = closed_candles(fetched)
     if not candles:
@@ -307,10 +301,7 @@ def run_cycle(
     for candle in to_process:
         events += process_candle(conn, strategies, positions, candle, killcheck)
         save_state(state_path, utc_datetime(candle.timestamp))
-    print(
-        f"cycle=paper_trader symbol={SYMBOL} interval={INTERVAL} candles={len(to_process)} "
-        f"events={events} open={len(positions)} last={iso(candles[-1].timestamp)}"
-    )
+    print(f"cycle=paper_trader symbol={SYMBOL} interval={INTERVAL} candles={len(to_process)} events={events} open={len(positions)} last={iso(candles[-1].timestamp)}")
 
 
 def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
