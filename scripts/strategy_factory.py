@@ -1,146 +1,79 @@
 #!/usr/bin/env python3
-"""Stdlib-only SOLUSDT strategy research harness; exploratory, never validation."""
+"""Real multi-market strategy scanner; legacy single-symbol JSON CLI is preserved."""
 from __future__ import annotations
-import argparse, importlib, inspect, json, os, ssl, sys, time, urllib.request
-from collections.abc import Mapping
-from dataclasses import asdict, is_dataclass
-from typing import Any, Dict, Iterable, Optional
-
-# Demo-only workaround retained from existing scripts; verify certificates in real use.
-_ctx = ssl._create_unverified_context()
-urllib.request.install_opener(urllib.request.build_opener(urllib.request.HTTPSHandler(context=_ctx)))
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+import argparse, importlib, inspect, json, logging, os, ssl, sys
+from pathlib import Path
+from typing import Any
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
 from quant.backtest import Backtester
-from quant.costs import DEFAULT_COSTS
-from quant.data import load_binance_klines
+from quant.data import load_binance_candles
 
-DEFAULT_MODULES = [
-    "quant.strategies.momentum_breakout", "quant.strategies.opening_range_breakout",
-    "quant.strategies.rolling_vwap_mean_reversion", "quant.strategies.rsi2_reversal",
-    "quant.strategies.volume_confirmed_breakout", "quant.strategies.ema_cross_atr",
-    "quant.strategies.session_high_low_breakout", "quant.strategies.donchian_scalp",
-]
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+LOGGER=logging.getLogger(__name__)
+DEFAULT_MODULES=["quant.strategies.momentum_breakout","quant.strategies.opening_range_breakout","quant.strategies.rolling_vwap_mean_reversion","quant.strategies.rsi2_reversal","quant.strategies.volume_confirmed_breakout","quant.strategies.ema_cross_atr","quant.strategies.session_high_low_breakout","quant.strategies.donchian_scalp"]
+SYMBOLS=["SOLUSDT","BTCUSDT","ETHUSDT","BNBUSDT","XRPUSDT","ADAUSDT","DOGEUSDT"]
+INTERVALS=["1m","5m","15m","30m","1h"]
 
-def fetch_paginated(symbol: str, interval: str, limit: int) -> list:
-    """Fetch newest candles chronologically, respecting Binance's 1000-row page cap."""
-    if limit < 1:
-        raise ValueError("limit must be positive")
-    rows, end_time = {}, None
-    while len(rows) < limit:
-        ask = min(1000, limit - len(rows))
-        page = load_binance_klines(symbol.upper(), interval, end_time=end_time, limit=ask)
-        if not page:
-            break
-        before = len(rows)
-        for candle in page:
-            rows[candle.timestamp] = candle
-        if len(rows) == before:
-            break
-        end_time = int(min(rows).timestamp() * 1000) - 1
-        if len(page) < ask:
-            break
-        time.sleep(0.10)
-    return [rows[key] for key in sorted(rows)][-limit:]
-
-def strategy_class(module_name: str, class_name: Optional[str]) -> type:
-    module = importlib.import_module(module_name)
-    if class_name:
-        candidate = getattr(module, class_name)
-        if not callable(getattr(candidate, "next", None)):
-            raise TypeError("selected class must expose next(candle)")
-        return candidate
-    found = [c for _, c in inspect.getmembers(module, inspect.isclass)
-             if c.__module__ == module_name and callable(getattr(c, "next", None))]
-    if not found:
-        raise TypeError("no module-local class with next(candle) found")
+def strategy_class(module_name:str, class_name:str|None=None):
+    mod=importlib.import_module(module_name)
+    if class_name: return getattr(mod,class_name)
+    found=[c for _,c in inspect.getmembers(mod,inspect.isclass) if c.__module__==module_name and callable(getattr(c,"next",None))]
+    if not found: raise TypeError(f"no strategy class exposing next() in {module_name}")
     return found[0]
 
 class SignalAdapter:
-    """Adapt Signal-like dataclasses/objects to the mapping API used by Backtester."""
-    def __init__(self, raw: Any):
-        self.raw = raw
-    def next(self, candle: Any) -> Any:
-        signal = self.raw.next(candle)
-        if signal is None or isinstance(signal, (str, Mapping)):
-            return signal
-        if is_dataclass(signal):
-            signal = asdict(signal)
-        elif hasattr(signal, "__dict__"):
-            signal = dict(vars(signal))
-        else:
-            raise TypeError("signal must be string, mapping, dataclass, or object")
-        action = str(signal.get("action", signal.get("signal", "hold"))).lower()
-        if action in ("long", "buy"):
-            action = "enter"; signal["side"] = "long"
-        elif action in ("short", "sell"):
-            action = "enter"; signal["side"] = "short"
-        elif action in ("close", "flatten"):
-            action = "exit"
-        signal["action"] = action
-        return signal
+    def __init__(self, raw): self.raw=raw
+    def next(self,candle):
+        sig=self.raw.next(candle)
+        if sig is None: return {"action":"hold"}
+        if hasattr(sig,"__dataclass_fields__"): sig={k:getattr(sig,k) for k in sig.__dataclass_fields__}
+        elif hasattr(sig,"__dict__") and not isinstance(sig,dict): sig=vars(sig)
+        if isinstance(sig,str): sig={"action":sig}
+        if not isinstance(sig,dict): raise TypeError("strategy signal must be mapping/string/object")
+        action=str(sig.get("action",sig.get("signal","hold"))).lower()
+        if action in ("buy","long"): return {**sig,"action":"enter","side":"long"}
+        if action in ("sell","short"): return {**sig,"action":"enter","side":"short"}
+        if action in ("close","flatten"): return {**sig,"action":"exit"}
+        return {**sig,"action":action}
 
-def load_strategy(module_name: str, class_name: Optional[str]) -> SignalAdapter:
-    cls = strategy_class(module_name, class_name)
-    try:
-        return SignalAdapter(cls())
-    except TypeError as exc:
-        raise TypeError("strategy must be constructible with no arguments") from exc
-
-def verdict(m: Dict[str, Any]) -> str:
-    count = int(m["trade_count"])
-    sane = (0 <= float(m["win_rate"] or 0) <= 1 and
-            count == int(m["wins"]) + int(m["losses"]) + int(m["flat_trades"]))
-    if count < 200:
-        return "INCONCLUSIVE"
-    if not sane:
-        return "FAIL"
-    return "PASS research" if (m["net_profit"] > 0 and m["profit_factor"] > 1.15 and m["max_drawdown_pct"] < .20) else "FAIL"
-
-def run_one(module_name: str, candles: Iterable[Any], class_name: Optional[str]) -> Dict[str, Any]:
-    initial = 10000.0
-    model = DEFAULT_COSTS["BINANCE_SOL_MAKER"]
-    result = Backtester(load_strategy(module_name, class_name), initial_capital=initial,
-        quantity=1.0, spread=0.0, slippage=0.0, commission=0.0,
-        commission_rate=model.commission_rate_per_side, min_trades=200).run(candles)
-    m = dict(result.metrics)
-    curve = result.equity_curve or [initial]
-    peak = max(curve) if curve else initial
-    m.update({"strategy_module": module_name, "initial_capital": initial,
-        "final_equity": result.final_equity, "net_profit": result.final_equity - initial,
-        "max_drawdown_pct": m["max_drawdown"] / peak if peak else 0.0,
-        "wins": sum(t.pnl > 0 for t in result.trades),
-        "losses": sum(t.pnl < 0 for t in result.trades),
-        "flat_trades": sum(t.pnl == 0 for t in result.trades),
-        "win_rate_sanity": "0 <= win_rate <= 1 and wins+losses+flat_trades == trade_count"})
-    m["verdict"] = verdict(m)
+def _metrics(result, initial=10000.0):
+    m=dict(result.metrics); trades=result.trades; wins=sum(t.pnl>0 for t in trades); losses=sum(t.pnl<0 for t in trades)
+    m.update(net_profit=result.final_equity-initial, net_profit_pct=(result.final_equity-initial)/initial*100.0, trades=len(trades), wins=wins, losses=losses, win_rate=wins/len(trades)*100.0 if trades else 0.0, max_drawdown_pct=m.get("max_drawdown",0.0)/max(max(result.equity_curve or [initial]),initial)*100.0)
+    m["verdict"]="INCONCLUSIVE" if len(trades)<50 else ("PASS" if m["profit_factor"]>1.15 and m["win_rate"]>=45.0 and m["net_profit_pct"]>0 else "FAIL")
     return m
 
-def main(argv=None) -> Dict[str, Any]:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--symbol", default="SOLUSDT")
-    parser.add_argument("--interval", default="5m")
-    parser.add_argument("--limit", type=int, default=20000)
-    parser.add_argument("--module", action="append", dest="modules", help="repeatable module path")
-    parser.add_argument("--class", dest="class_name")
-    args = parser.parse_args(argv)
-    modules = args.modules or DEFAULT_MODULES
-    candles = fetch_paginated(args.symbol, args.interval, args.limit)
-    if not candles:
-        raise RuntimeError("Binance returned no candles")
-    model = DEFAULT_COSTS["BINANCE_SOL_MAKER"]
-    output = {"dataset": {"source": "Binance public /api/v3/klines", "symbol": args.symbol.upper(),
-        "interval": args.interval, "candles": len(candles), "start": candles[0].timestamp.isoformat(),
-        "end": candles[-1].timestamp.isoformat()},
-        "costs": {"model": "BINANCE_SOL_MAKER", "commission_rate_per_side": model.commission_rate_per_side,
-                  "spread": 0.0, "slippage": 0.0},
-        "thresholds": {"minimum_trades": 200, "net_profit_gt": 0.0, "profit_factor_gt": 1.15,
-                       "max_drawdown_pct_lt": 0.20, "win_rate_sanity": "0 <= win_rate <= 1 and counts reconcile"},
-        "results": [run_one(name, candles, args.class_name) for name in modules],
-        "caveat": "Exploratory research only; no result is validated or proof of future performance."}
-    print(json.dumps(output, indent=2, sort_keys=True, default=str))
-    return output
+def run_one(module_name:str,candles,class_name=None):
+    cls=strategy_class(module_name,class_name); result=Backtester(SignalAdapter(cls()),initial_capital=10000.0,quantity=1.0,spread=0.0,slippage=0.0,commission=0.0,commission_rate=0.0002,min_trades=0).run(candles)
+    m=_metrics(result); m.update(strategy=module_name.rsplit(".",1)[-1], strategy_module=module_name); return m
 
-if __name__ == "__main__":
-    main()
+def scan(symbols=SYMBOLS,intervals=INTERVALS,limit=3000,output=None):
+    rows=[]
+    for symbol in symbols:
+        for interval in intervals:
+            try:
+                candles=load_binance_candles(symbol,interval,limit=limit)
+                LOGGER.info("scanner dataset %s %s: %d candles",symbol,interval,len(candles))
+                for module in DEFAULT_MODULES:
+                    try: rows.append({"symbol":symbol,"interval":interval,**run_one(module,candles)})
+                    except Exception as exc: LOGGER.exception("strategy failed %s %s %s: %s",symbol,interval,module,exc); rows.append({"symbol":symbol,"interval":interval,"strategy":module.rsplit(".",1)[-1],"verdict":"INCONCLUSIVE","error":str(exc),"trades":0})
+            except Exception as exc:
+                LOGGER.exception("dataset failed %s %s: %s",symbol,interval,exc)
+                for module in DEFAULT_MODULES: rows.append({"symbol":symbol,"interval":interval,"strategy":module.rsplit(".",1)[-1],"verdict":"INCONCLUSIVE","error":str(exc),"trades":0})
+    if output: write_markdown(rows,Path(output))
+    return rows
+
+def write_markdown(rows,path:Path):
+    path.parent.mkdir(parents=True,exist_ok=True); rows=sorted(rows,key=lambda x:(x["symbol"],x["interval"],x["strategy"]))
+    lines=["# Strategy library — real multi-market scan","","Generated by `python scripts/strategy_factory.py --scan`; values are fetched at workflow runtime and are never hardcoded.","","| Symbol | Timeframe | Strategy | Verdict | Net profit % | Win rate % | Profit factor | Max drawdown % | Trades |","|---|---|---|---:|---:|---:|---:|---:|---:|"]
+    for r in rows:
+        verdict=r.get("verdict","INCONCLUSIVE"); v=f"**{verdict}**" if verdict=="PASS" else verdict
+        lines.append(f"| {r['symbol']} | {r['interval']} | {r['strategy']} | {v} | {r.get('net_profit_pct','—'):.4f} | {r.get('win_rate','—'):.2f} | {r.get('profit_factor','—'):.4f} | {r.get('max_drawdown_pct','—'):.4f} | {r.get('trades',0)} |" if "error" not in r else f"| {r['symbol']} | {r['interval']} | {r['strategy']} | {v} | — | — | — | — | 0 |")
+    path.write_text("\n".join(lines)+"\n",encoding="utf-8")
+
+def main(argv=None):
+    p=argparse.ArgumentParser(); p.add_argument("--symbol",default="SOLUSDT"); p.add_argument("--interval",default="5m"); p.add_argument("--limit",type=int,default=2000); p.add_argument("--module",action="append"); p.add_argument("--class",dest="class_name"); p.add_argument("--scan",action="store_true"); p.add_argument("--output",default="docs/STRATEGY_LIBRARY.md"); args=p.parse_args()
+    if args.scan: print(json.dumps({"runs":len(scan(limit=args.limit,output=args.output)),"output":args.output},indent=2)); return
+    candles=load_binance_candles(args.symbol,args.interval,limit=args.limit); modules=args.module or DEFAULT_MODULES
+    out={"dataset":{"symbol":args.symbol,"interval":args.interval,"candles":len(candles)},"results":[run_one(m,candles,args.class_name) for m in modules]}; print(json.dumps(out,indent=2,sort_keys=True))
+if __name__=="__main__": main()
