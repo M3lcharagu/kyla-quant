@@ -238,11 +238,11 @@ PASS requires PF > 1.15, win rate >= 45%, net profit > 0, and at least 50 trades
 | SOLUSDT | 30m | rsi2_reversal | INCONCLUSIVE | - | - | - | - | 0 | data source exhaustion: HTTP 451 from https://api.binance.com/api/v3/klines?symbol=SOLUSDT&interval=30m&limit=1000: {; HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=SOLUSDT&interval=30&limit=1000: {; OKX returned no usable candles |
 | SOLUSDT | 30m | session_high_low_breakout | INCONCLUSIVE | - | - | - | - | 0 | data source exhaustion: HTTP 451 from https://api.binance.com/api/v3/klines?symbol=SOLUSDT&interval=30m&limit=1000: {; HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=SOLUSDT&interval=30&limit=1000: {; OKX returned no usable candles |
 | SOLUSDT | 30m | volume_confirmed_breakout | INCONCLUSIVE | - | - | - | - | 0 | data source exhaustion: HTTP 451 from https://api.binance.com/api/v3/klines?symbol=SOLUSDT&interval=30m&limit=1000: {; HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=SOLUSDT&interval=30&limit=1000: {; OKX returned no usable candles |
-| SOLUSDT | 5m | donchian_scalp | INCONCLUSIVE | -0.0207 | 36.84 | 0.6133 | 0.0283 | 38 | - |
-| SOLUSDT | 5m | ema_cross_atr | INCONCLUSIVE | 0.0096 | 44.44 | 1.2413 | 0.0127 | 27 | - |
+| SOLUSDT | 5m | donchian_scalp | INCONCLUSIVE | -0.0194 | 36.84 | 0.6375 | 0.0283 | 38 | - |
+| SOLUSDT | 5m | ema_cross_atr | INCONCLUSIVE | 0.0109 | 44.44 | 1.2831 | 0.0127 | 27 | - |
 | SOLUSDT | 5m | momentum_breakout | INCONCLUSIVE | -0.0307 | 33.33 | 0.6113 | 0.0363 | 48 | - |
 | SOLUSDT | 5m | opening_range_breakout | INCONCLUSIVE | -0.0001 | 50.00 | 0.9653 | 0.0038 | 2 | - |
-| SOLUSDT | 5m | rolling_vwap_mean_reversion | FAIL | -0.0298 | 38.89 | 0.6880 | 0.0431 | 54 | - |
+| SOLUSDT | 5m | rolling_vwap_mean_reversion | FAIL | -0.0293 | 39.62 | 0.6912 | 0.0431 | 53 | - |
 | SOLUSDT | 5m | rsi2_reversal | INCONCLUSIVE | -0.0134 | 33.33 | 0.3099 | 0.0165 | 9 | - |
 | SOLUSDT | 5m | session_high_low_breakout | INCONCLUSIVE | -0.0003 | 50.00 | 0.8916 | 0.0038 | 2 | - |
 | SOLUSDT | 5m | volume_confirmed_breakout | INCONCLUSIVE | -0.0382 | 20.69 | 0.3570 | 0.0433 | 29 | - |
