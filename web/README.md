@@ -17,6 +17,14 @@ The PWA manifest is `manifest.webmanifest`. Add the real `icon-192.png` and `ico
 - **GitHub Pages or another static host:** publish the repository root as static files and open `/web/`. No bundler, package manager, server runtime, or external CDN is required.
 - For local review, run a simple static server from the repository root, for example `python3 -m http.server`, then open `http://localhost:8000/web/`. Do not open the HTML directly as a `file://` URL if you want service-worker behavior.
 
+## Clicky analytics
+
+Mel, [sign up free at https://heyclicky.com](https://heyclicky.com), then create a site for the deployed URL. Paste that site's ID into the `YOUR_SITE_ID` placeholder in this snippet before deploying:
+
+```html
+<script async data-id="YOUR_SITE_ID" src="https://static.getclicky.com/js"></script>
+```
+
 ## Updating dashboard data
 
 Overwrite `web/data/dashboard.json` with verified values after a run. Keep the keys used by the dashboard:
@@ -33,7 +41,7 @@ Overwrite `web/data/dashboard.json` with verified values after a run. Keep the k
 }
 ```
 
-`win_rate` is a number in percent, not a decimal. Do not present fabricated performance as live evidence: keep `placeholder` true until the source run is documented. The service worker uses network-first behavior for data endpoints and falls back to its last cached response when offline.
+`win_rate` is a number in percent, not a decimal. Do not present fabricated performance as live evidence: keep `placeholder` true until the source run is documented.
 
 ## Optional paper-trade journal
 
