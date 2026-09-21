@@ -265,7 +265,7 @@ class Backtester:
         if isinstance(value, Candle):
             return value
         if not isinstance(value, Mapping):
-value = {k: getattr(value, k) for k in ("timestamp", "time", "date", "open", "high", "low", "close", "volume") if hasattr(value, k)}
+            value = {k: getattr(value, k) for k in ("timestamp", "time", "date", "open", "high", "low", "close", "volume") if hasattr(value, k)}
         if not isinstance(value, Mapping):
             raise TypeError("candles must be Candle instances or mappings")
         timestamp = value.get("timestamp", value.get("time", value.get("date")))
