@@ -1,0 +1,10 @@
+{
+  "name": "Kyla Quant - Paper Trading Signal Watcher",
+  "nodes": [
+    {"parameters":{"triggerTimes":{"item":[{"mode":"custom","cronExpression":"*/15 9-16 * * *"}] }},"id":"paper-cron","name":"Every 15 minutes 09:00-16:00","type":"n8n-nodes-base.cron","typeVersion":1,"position":[260,300]},
+    {"parameters":{"command":"cd \"$HOME/kyla-quant\" && python3 scripts/paper_trader.py --once --killcheck","executeOnce":true},"id":"run-paper-trader","name":"Run paper trader once","type":"n8n-nodes-base.executeCommand","typeVersion":1,"position":[520,300]},
+    {"parameters":{"authentication":"none","requestMethod":"POST","url":"YOUR_WEBHOOK_URL","jsonParameters":true,"options":{},"bodyParametersJson":"={{ JSON.stringify({content: 'Paper-trading signal watcher\\n\\n' + ($json.stdout || $json.output || $json.data || '')}) }}"},"id":"post-paper-signals","name":"POST new signals","type":"n8n-nodes-base.httpRequest","typeVersion":1,"position":[800,300]}
+  ],
+  "connections":{"Every 15 minutes 09:00-16:00":{"main":[[{"node":"Run paper trader once","type":"main","index":0}]]},"Run paper trader once":{"main":[[{"node":"POST new signals","type":"main","index":0}]]}},
+  "active":false,"settings":{},"versionId":"5c4d4d0d-0b1d-4bdb-9bf3-000000000002","meta":{"templateCredsSetupCompleted":true},"tags":[]
+}

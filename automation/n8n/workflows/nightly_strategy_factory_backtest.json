@@ -1,0 +1,10 @@
+{
+  "name": "Kyla Quant - Nightly Strategy Factory Backtest",
+  "nodes": [
+    {"parameters":{"triggerTimes":{"item":[{"mode":"custom","cronExpression":"0 22 * * *"}] }},"id":"nightly-cron","name":"Nightly 22:00","type":"n8n-nodes-base.cron","typeVersion":1,"position":[260,300]},
+    {"parameters":{"command":"cd \"$HOME/kyla-quant\" && python3 scripts/strategy_factory.py","executeOnce":true},"id":"run-strategy-factory","name":"Run strategy factory","type":"n8n-nodes-base.executeCommand","typeVersion":1,"position":[520,300]},
+    {"parameters":{"authentication":"none","requestMethod":"POST","url":"YOUR_WEBHOOK_URL","jsonParameters":true,"options":{},"bodyParametersJson":"={{ JSON.stringify({content: 'Nightly strategy-factory backtest\\n\\n' + ($json.stdout || $json.output || $json.data || '')}) }}"},"id":"post-backtest-results","name":"POST results table","type":"n8n-nodes-base.httpRequest","typeVersion":1,"position":[800,300]}
+  ],
+  "connections":{"Nightly 22:00":{"main":[[{"node":"Run strategy factory","type":"main","index":0}]]},"Run strategy factory":{"main":[[{"node":"POST results table","type":"main","index":0}]]}},
+  "active":false,"settings":{},"versionId":"5c4d4d0d-0b1d-4bdb-9bf3-000000000001","meta":{"templateCredsSetupCompleted":true},"tags":[]
+}
