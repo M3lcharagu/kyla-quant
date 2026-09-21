@@ -1,48 +1,28 @@
 # KYLA mobile PWA
 
-`web/` is a build-free, vanilla JavaScript dashboard for the `kyla-quant` repository. It is designed for a phone first and can be installed to an iPhone home screen as a standalone PWA.
+`web/` is a build-free vanilla JavaScript dashboard with one `web/index.html`, no framework/CDN dependency, and an offline-capable service worker.
 
-## Install on iPhone Safari
+## Tabs
 
-1. Publish or serve this directory over HTTPS. Safari does not install service workers from ordinary `file://` pages.
-2. Open the published `web/index.html` in Safari.
-3. Tap **Share**, choose **Add to Home Screen**, edit the name to **KYLA** if needed, then tap **Add**.
-4. Launch KYLA from the new home-screen icon. The app shell is cached for later launches; data refreshes when the network is available.
+- **QUANT** — dashboard KPIs, interactive strategy cards, and the source evidence table.
+- **AUTOPILOT** — read-only paper-trading status and documented schedule.
+- **3D HUB** — link to the separate KYLA OS spatial deployment.
+- **PRODUCTS** — links to the two static product pages.
+- **AGENTS** — exactly seven repository workers: claude, codex, copilot, cursor, docker-agent, droid, shell. Cards show repository-based roles, personality, handles, input/output sources, and a local command form.
+- **WORKFLOWS** — exactly 17 entries: three n8n recipes plus Wrath, Greed, Sloth, Pride, Lust, Envy, Gluttony, Chastity, Temperance, Charity, Diligence, Patience, Kindness, Humility.
 
-The PWA manifest is `manifest.webmanifest`. Add the real `icon-192.png` and `icon-512.png` files to `web/icons/` when they are ready. See `web/icons/README.txt`; no binary icon files are generated here.
+## AGENTS command queue
 
-## Free static hosting
+Submitting a command only appends `{agent, command, queuedAt, status}` to the browser `localStorage` key `kylaPendingCommandLog`. The UI labels this as a pending command queue with no real execution; it never sends commands to a shell, agent, or network service.
 
-- **Vercel:** import the repository as a static project, keep the repository root as the project root, and use no build command. The dashboard URL is `/web/`. If the project root is set to `web/` instead, also publish the referenced `docs/` and `products/` paths or adjust those links for that deployment.
-- **GitHub Pages or another static host:** publish the repository root as static files and open `/web/`. No bundler, package manager, server runtime, or external CDN is required.
-- For local review, run a simple static server from the repository root, for example `python3 -m http.server`, then open `http://localhost:8000/web/`. Do not open the HTML directly as a `file://` URL if you want service-worker behavior.
+## WORKFLOWS data
 
-## Clicky analytics
+`web/data/workflows.json` is the source for all 17 interactive cards. Each entry includes name, mapping, schedule, placeholder status, description, agents, inputs, and outputs. The registry is precached by `web/service-worker.js` and is suitable for offline review.
 
-Mel, [sign up free at https://heyclicky.com](https://heyclicky.com), then create a site for the deployed URL. Paste that site's ID into the `YOUR_SITE_ID` placeholder in this snippet before deploying:
+## 3D mode
 
-```html
-<script async data-id="YOUR_SITE_ID" src="https://static.getclicky.com/js"></script>
-```
+The dashboard toggle applies a subtle CSS perspective to the app shell and a small `translateZ` lift to cards. It uses no WebGL and honors `prefers-reduced-motion`, keeping the effect lightweight for iPhone 11-class hardware.
 
-## Updating dashboard data
+## Install and Clicky
 
-Overwrite `web/data/dashboard.json` with verified values after a run. Keep the keys used by the dashboard:
-
-```json
-{
-  "placeholder": false,
-  "paper_trades": 42,
-  "win_rate": 54.8,
-  "strategies_passing": 2,
-  "last_backtest_date": "2026-09-21",
-  "updated_at": "2026-09-21T22:00:00Z",
-  "source": "Describe the run or report used"
-}
-```
-
-`win_rate` is a number in percent, not a decimal. Do not present fabricated performance as live evidence: keep `placeholder` true until the source run is documented.
-
-## Optional paper-trade journal
-
-When available, the dashboard looks for `journal/paper_trades.json`, `paper_trades.json`, and `web/data/paper_trades.json`. It accepts an array of trades or an object containing a `trades`/`paper_trades` array. The autopilot schedule displayed in the app mirrors `scripts/autopilot.sh`: paper checks every 15 minutes during 09:00–16:00, a daily backtest at 22:00, and a Sunday journal report at 18:00 (host scheduler timezone).
+Serve `web/` over HTTPS, open `web/index.html` in Safari, then use **Share → Add to Home Screen**. The footer includes a Clicky badge and a commented optional snippet using `YOUR_SITE_ID`; enable it only after configuring a site, so the PWA remains offline-capable without analytics.
