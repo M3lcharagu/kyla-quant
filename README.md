@@ -57,6 +57,27 @@ This initial scaffold is intentionally runnable-later-on-Mac/Docker rather than 
 
 Open the [installable KYLA dashboard](web/) for the phone-first QUANT, AUTOPILOT, 3D HUB, and PRODUCTS views. It is a no-build static PWA; see [`web/README.md`](web/README.md) for iPhone Safari installation, free hosting, icons, and `dashboard.json` update guidance.
 
+## Scheduled automation
+
+The GitHub Actions workflows run in UTC and use Python 3.11:
+
+- [`nightly-backtest.yml`](.github/workflows/nightly-backtest.yml) — daily at `0 19 * * *`; installs dependencies and runs `python scripts/strategy_factory.py`.
+- [`paper-trader.yml`](.github/workflows/paper-trader.yml) — every 15 minutes during `06:00–13:59` UTC on weekdays; it runs only when the repository variable `PAPER_TRADING_ENABLED` is exactly `true`.
+- [`weekly-kpi.yml`](.github/workflows/weekly-kpi.yml) — Sundays at `0 15 * * 0`; it writes KPI stdout to `reports/weekly-kpi.txt` with `tee`.
+
+The paper and KPI workflows commit their generated paper artifacts: `journal/paper_trades.json` and `journal/trades.db`. Because the database and reports are ignored locally, the workflows use explicit `git add -f`. They configure the `github-actions[bot]` identity and push to `main` using `GITHUB_TOKEN`.
+
+The verified local commands are:
+
+```bash
+pip install -r requirements.txt
+python scripts/strategy_factory.py
+python scripts/paper_trader.py --once
+python scripts/trade_journal.py report
+```
+
+Review the strategy definitions and research caveats in [`docs/STRATEGY_LIBRARY.md`](docs/STRATEGY_LIBRARY.md) before treating any output as evidence.
+
 ## License
 
 No license has been selected yet. Treat this repository as all-rights-reserved until the owner adds one.
