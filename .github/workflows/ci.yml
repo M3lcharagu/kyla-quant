@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile every script
+        run: python -m py_compile $(find scripts -type f -name '*.py' -print)
+      - name: Smoke-test safety controls
+        run: |
+          python scripts/kill_switch.py --status
+          python scripts/scrub_check.py
+          python - <<'PY'
+          from scripts.kill_switch import trade_allowed
+          allowed, reason = trade_allowed(spread=1.0, max_spread=0.5, news_file='/tmp/does-not-exist')
+          assert not allowed and 'exceeds' in reason
+          PY
+      - name: Run tests when dependencies are available
+        run: python -m unittest discover -s tests -p 'test_*.py'

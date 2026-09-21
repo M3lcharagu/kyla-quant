@@ -11,16 +11,22 @@ venv/
 # Secrets and local configuration
 .env
 .env.*
+!.env.example
 config.local.yaml
 config.*.local.yaml
 *.pem
 *.key
+*.p12
+*.pfx
 secrets/
+.kill_switch
+NEWS_GUARD
 
 # Research outputs and local state
 *.db
 *.sqlite
 *.sqlite3
+*.log
 data/raw/
 data/cache/
 reports/
@@ -30,6 +36,4 @@ logs/
 .DS_Store
 .idea/
 .vscode/
-
-# Docker
 .docker/

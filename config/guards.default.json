@@ -1,0 +1,12 @@
+{
+  "kill_switch": {
+    "local_flag_file": ".kill_switch",
+    "remote_flag_url_env": "KYLA_KILL_SWITCH_URL",
+    "fail_closed_on_remote_error": true
+  },
+  "trade_guards": {
+    "news_flag_file": "NEWS_GUARD",
+    "max_spread": 0.0,
+    "spread_units": "native price units"
+  }
+}
