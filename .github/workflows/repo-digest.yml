@@ -1,0 +1,52 @@
+name: repo digest
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  update-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch repository digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs
+          url="https://gitingest.com/M3lcharagu/kyla-quant"
+          if ! curl -fsSL "$url" -o docs/repo-digest.txt; then
+            python - <<'PY'
+            import urllib.request
+            url = "https://gitingest.com/M3lcharagu/kyla-quant"
+            request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(request) as response:
+                data = response.read()
+            with open("docs/repo-digest.txt", "wb") as handle:
+                handle.write(data)
+            PY
+          fi
+
+      - name: Commit changed digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "kyla-bot"
+          git config user.email "kyla-bot@users.noreply.github.com"
+          git add docs/repo-digest.txt
+          if git diff --cached --quiet; then
+            echo "No digest changes"
+            exit 0
+          fi
+          git commit -m "chore: update repo digest"
+          git push
