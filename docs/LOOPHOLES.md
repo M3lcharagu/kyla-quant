@@ -1,35 +1,50 @@
-# LOOPHOLES.md — control and delivery risk register
+# LOOPHOLES.md — initial KYLA control checklist
 
-Repository: `M3lcharagu/kyla-quant`  
-Status rule: a loophole is FIXED only when code is present, checked, and the remaining owner action is explicit. Provider/account/compliance actions remain open until the owner verifies them.
+This is a living audit checklist. A loophole is not closed because a document mentions it; close it with code, configuration, a test, and an owner decision. Until then, mark it **OPEN** and fail closed.
 
-## P0 — must close before any live or funded execution
+## 1. WhatsApp channel security
 
-1. **Public repository, history, and incomplete scanning — FIXED (implementation: [3bc526a](https://github.com/M3lcharagu/kyla-quant/commit/3bc526ae21c34d316639862923d13a063fa7a464)).** `SECURITY.md`, `.gitignore`, `scripts/scrub_check.py`, and CI scanning are present. **REMAINS:** owner must make the repository private or scrub every reachable history/ref, rotate any exposed credentials, and review provider alerts.
-2. **Global kill switch — PARTIAL / REMAINS (implementation: [3bc526a](https://github.com/M3lcharagu/kyla-quant/commit/3bc526ae21c34d316639862923d13a063fa7a464)).** `scripts/kill_switch.py` provides local and configurable remote flags, fail-closed remote errors, logging, and a spread/news guard. **REMAINS:** wire `require_clear()` as the first optional check in every strategy factory, journal, deployment, and execution adapter, then exercise it from a second operator path.
-3. **R13 CI/deploy enforcement — FIXED for repository checks (implementation: [3bc526a](https://github.com/M3lcharagu/kyla-quant/commit/3bc526ae21c34d316639862923d13a063fa7a464)).** `.github/workflows/ci.yml` compiles all scripts and runs smoke/tests on push and PR. **REMAINS:** require branch protection/status checks and make every real deployment/execution launcher consume a passing status.
+- [ ] **OPEN — identity:** restrict commands to an explicit allowlist of verified senders and devices; reject unknown numbers.
+- [ ] **OPEN — authentication:** use signed, expiring command envelopes or an equivalent provider-verified webhook; never trust display names.
+- [ ] **OPEN — replay/deduplication:** assign a unique command ID, timestamp, nonce, and expiry; reject duplicates and stale messages.
+- [ ] **OPEN — approvals:** require a human approval record for consequential actions; separate requester and approver where practical.
+- [ ] **OPEN — secrets:** keep provider tokens, webhook secrets, and phone identifiers out of GitHub, logs, screenshots, and browser code.
+- [ ] **OPEN — privacy:** minimise message content, define retention, redact sensitive data, and document provider/jurisdiction obligations.
+- [ ] **OPEN — fallback:** Discord is backup only; a fallback event must preserve the same audit ID and permission checks.
 
-## P1 — close before unattended paper trading or external control
+## 2. Free-tier and static-host limits
 
-4. **iPhone/Mac single-host recovery — REMAINS.** Owner must define a second supported operator path, encrypted durable state/backups, RPO/RTO, and rehearse restore and host-loss procedures.
-5. **Least privilege — FIXED for policy (implementation: [3bc526a](https://github.com/M3lcharagu/kyla-quant/commit/3bc526ae21c34d316639862923d13a063fa7a464)).** `docs/LEAST_PRIVILEGE.md` lists baseline and forbidden scopes. **REMAINS:** configure and verify each provider key, including no withdrawal/transfer/admin access.
-6. **WhatsApp/Gmail/device trigger isolation — REMAINS.** Owner must use signed expiring commands, allowlists, human approval, deduplication, rate limits, audit logs, and a kill switch for each trigger.
-7. **Deriv/account compliance — REMAINS.** Owner must obtain written broker/jurisdiction review, confirm KYC/AML, tax, leverage, instruments, API, and paper/live permissions, and enforce the resulting capability matrix.
-8. **Exchange key permissions, IP allowlist, withdrawals, and 2FA — FIXED for checklist (implementation: [3bc526a](https://github.com/M3lcharagu/kyla-quant/commit/3bc526ae21c34d316639862923d13a063fa7a464)).** `docs/EXCHANGE_SECURITY.md` documents the required controls. **REMAINS:** owner must configure and verify read-only/trade-only keys, IP allowlists, disabled withdrawals/transfers, and 2FA with each provider.
-9. **Seven-agent authorization and separation of duties — REMAINS.** Owner must define identities, deny-by-default scopes, approvals/quorum, conflict handling, immutable audit IDs, and limits.
-10. **Correlated yen exposure — REMAINS.** Risk owner must implement currency-factor exposure aggregation, JPY limits, stress tests, stale-data rejection, and pre-order portfolio checks.
-11. **Spread, news, and intervention locks — PARTIAL / REMAINS (implementation: [3bc526a](https://github.com/M3lcharagu/kyla-quant/commit/3bc526ae21c34d316639862923d13a063fa7a464)).** `scripts/kill_switch.py` and `config/guards.default.json` implement NEWS_GUARD and configurable spread rejection. **REMAINS:** wire the guard into the strategy factory/execution path, add validated event/quote data, and test fail-closed behavior.
+- [ ] **OPEN — Vercel:** verify current free-tier bandwidth, build, function, request, and deployment quotas before enabling anything beyond static files.
+- [ ] **OPEN — polling:** prefer manual refresh or low-frequency jobs; add caching, backoff, budgets, and alerts before any external polling.
+- [ ] **OPEN — storage:** do not assume durable local state on a static host; keep source records in GitHub or an explicitly reviewed store.
+- [ ] **OPEN — spend guard:** define a hard monthly budget and an owner for provider billing alerts; no silent upgrade path.
+- [ ] **OPEN — dependency drift:** keep the dashboard framework-free and audit any optional CDN asset for availability, licensing, and fallback behavior.
 
-## P2 — close before scaling, continuous operation, or paid integrations
+## 3. Multipass versus Docker risks
 
-12. **$150/week spend and $5,000 target — REMAINS.** Owner must approve a measured risk budget, independent stop conditions, and net-of-all-cost reporting; no return target is guaranteed.
-13. **Vercel limits and external service/swap costs — REMAINS.** Owner must verify quotas, rate limits, vendor pricing, data/LLM/swap/funding costs, caps, alerts, and halt behavior.
+- [ ] **OPEN — Catalina support:** test the chosen Multipass version and image on the actual Mac Catalina core.
+- [ ] **OPEN — unsupported assumptions:** Docker Desktop and Orca require macOS 13+; do not document or script either as a Catalina prerequisite.
+- [ ] **OPEN — isolation:** define mounts, network egress, exposed ports, image provenance, and disposal rules for each Multipass VM.
+- [ ] **OPEN — recovery:** document VM backup/restore, disk pressure, update rollback, and a host-level kill switch.
+- [ ] **OPEN — parity:** record differences between local Multipass, CI, and any future hosted runtime before relying on behavior.
 
-## Exact owner actions still required
+## 4. API rate limits and data quality
 
-- Make this repository private **or** complete and independently verify a full history scrub; revoke/rotate any possibly exposed credentials.
-- Configure the local and remote kill-switch endpoints and call them first from every factory, journal, deployment, and execution adapter; test from a second device/process.
-- Enable branch protection/status requirements on `main` for `CI / checks` and prevent deployment when checks are absent or failing.
-- Configure exchange and other provider accounts with no withdrawal/transfer/admin rights, fixed IP allowlists, hardware-backed 2FA, short-lived keys, and provider audit review.
-- Complete broker/jurisdiction/KYC/AML/tax review and document the account capability matrix.
-- Complete recovery, trigger-authentication, multi-agent authorization, yen exposure, market-data validation, budget, and vendor-cost controls described above.
+- [ ] **OPEN — inventory:** record each provider's authentication method, quota, burst limit, reset window, terms, and owner.
+- [ ] **OPEN — backoff:** implement bounded retries with jitter, `Retry-After` handling, circuit breaking, and a visible degraded state.
+- [ ] **OPEN — freshness:** attach source timestamps and timezone to market/context data; reject stale, partial, contradictory, or out-of-order inputs.
+- [ ] **OPEN — cost:** estimate request volume before enabling a workflow; cache immutable responses and avoid duplicate fetches across agents.
+- [ ] **OPEN — no claims:** do not publish backtest or performance metrics without reproducible inputs, cost/slippage assumptions, and an independent review.
+
+## 5. R13 QA/security/legal gate
+
+- [ ] **OPEN — QA:** tests, smoke checks, accessibility checks, and rollback path are attached to the commit/release.
+- [ ] **OPEN — security:** secrets scan, least-privilege review, dependency review, channel review, and logging/redaction check are complete.
+- [ ] **OPEN — legal:** financial-advice boundary, disclaimers, provider terms, data licenses, privacy, jurisdiction, and promotion status are reviewed.
+- [ ] **OPEN — paper first:** paper/sandbox behavior is evidenced; no live execution path is present in this scaffold.
+- [ ] **OPEN — approval:** named human owner, date, commit SHA, decision, and unresolved risks are recorded.
+- [ ] **OPEN — enforcement:** CI/deploy tooling blocks release when R13 is missing, stale, or failed; no workflow may bypass it.
+
+## Release rule
+
+Until the relevant boxes are closed and R13 is approved, KYLA remains a local/static, read-only or paper-only scaffold. Do not interpret a green dashboard card, signal proposal, or successful script run as permission to trade or deploy.

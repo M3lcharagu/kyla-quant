@@ -1,83 +1,75 @@
-# kyla-quant
+# KYLA Quant
 
-**Profit-first, consistency-second**
+KYLA is a small, phone-first command center for disciplined research, paper trading, and product operations. It favors explicit state, low-cost infrastructure, and a human-approved release path over automation for its own sake.
 
-`kyla-quant` is a deliberately conservative research, backtesting, paper-execution, journaling, and QA scaffold for systematic market work. It is designed to make assumptions visible, put costs and risk before optimization, and keep live integrations behind explicit gates.
+> **Boundary:** This repository is a research and paper-trading scaffold, not financial advice and not production or live execution. It contains no secrets, live order path, fabricated metrics, or promised returns.
 
-> **Disclaimer:** This repository is a scaffold, not a promise of profitability or financial advice. Profitability requires data-quality checks, realistic cost modeling, robust out-of-sample validation, and independent review. Nothing here is investment advice. Use placeholders, paper accounts, and small controlled experiments until evidence supports the next stage.
+## Blueprint
 
-## Architecture
+### Command center
 
-```text
-market adapters → normalized data → feature/regime layer → strategy signal → cost model → risk engine → paper execution → journal → R13 QA gate
-```
+- **Primary control:** WhatsApp for concise commands, approvals, alerts, and daily briefs.
+- **Backup control:** Discord when WhatsApp is unavailable or unsuitable.
+- **Code home:** GitHub is the source of truth for code, documentation, reviews, and audit history.
+- **Dashboard:** `dashboard/` is a no-build static KYLA room view deployable on Vercel's free tier.
+- **Runtime posture:** keep the core light enough for an iPhone 11 plus a Mac running Catalina; use Multipass for Catalina-compatible Linux containers when a container boundary is needed.
 
-The arrows are a control flow, not a claim that any adapter is live or production-ready. Safe stubs intentionally fail closed when required data, credentials, or approvals are missing.
+### Seven core agents
 
-## Repository map
+1. **Orin** — command center and market context.
+2. **Sable** — risk, permissions, and kill-switch discipline.
+3. **Chroma** — signal curation and setup quality.
+4. **Maven** — macro, calendar, and regime context.
+5. **Vale** — execution planning and paper-order hygiene.
+6. **Echo** — journal, evidence, and review memory.
+7. **Lumen** — portfolio pulse and consistency checks.
 
-- `src/kyla_quant/data/` — venue and research-data adapter boundaries plus normalization and reliability stubs.
-- `src/kyla_quant/market_intel/` — state, monthly context, event risk, stance, brief, and typed schemas.
-- `src/kyla_quant/setups/` — deterministic SSS/BBB/BBS/SSB sequence detection, probe cycle, and exits.
-- `src/kyla_quant/backtest/` — walk-forward and cost-aware reporting interfaces.
-- `src/kyla_quant/risk/` — fixed-risk controls and a SQLite journal schema.
-- `src/kyla_quant/paper/` — OANDA practice, Freqtrade dry-run, and Hyperliquid shadow boundaries.
-- `src/kyla_quant/qa/` — R13 rejection checks.
-- `docs/` — specifications and operating notes.
-- `products/` — self-contained digital-product sales pages and fulfillment READMEs.
+Specialists sit behind the core rooms when needed: **Sophia** (R13 QA/security/legal), data reliability, research, content, and product-operations specialists. Specialists advise; the gate and the human owner retain release authority.
 
-## Quick start later (Mac or Docker)
+### Fourteen workflows
 
-1. Copy `config.example.yaml` to a local, untracked config file.
-2. Install `requirements.txt` in a virtual environment, or build the Docker image.
-3. Keep all credentials as environment variables or in a secret manager; never commit them.
-4. Run research sequentially, inspect cost assumptions, and archive reports.
-5. Do not advance from research to paper or paper to live without documented Mel approval and a passing R13 gate.
+1. Command intake and routing
+2. Daily operating brief
+3. Market/context scan
+4. Data-quality check
+5. Setup and signal review
+6. Paper-trading signal proposal
+7. Risk and exposure review
+8. Paper-order reconciliation
+9. Trading journal update
+10. Portfolio pulse
+11. Research and strategy review
+12. Content/product operations
+13. QA, security, and legal review
+14. Incident, kill-switch, and weekly review
 
-This initial scaffold is intentionally runnable-later-on-Mac/Docker rather than connected to a live account. TODOs and placeholders are explicit.
+These are workflow names, not claims that every integration is enabled. Missing data, stale data, failed checks, and unclear authority must fail closed.
 
-## Roadmap
+## Operating rules
 
-- [ ] Add real adapter clients behind credential and rate-limit interfaces.
-- [ ] Add versioned raw-data snapshots and quality dashboards.
-- [ ] Implement a reproducible feature store and regime labels.
-- [ ] Validate sequence definitions on a sufficiently large, leakage-free dataset.
-- [ ] Run 200+ cycles through walk-forward and out-of-sample tests with realistic costs.
-- [ ] Add paper-execution reconciliation and daily journal review.
-- [ ] Obtain Mel approval for each research→paper and paper→live promotion.
+- **R13 is mandatory:** nothing ships, deploys, or advances toward execution without the QA/security/legal gate in `docs/R13_QA_GATE.md` and a human approval record.
+- Default to read-only, sandbox, or paper mode. There is no live execution in this scaffold.
+- Never commit secrets. Use environment variables or a secret manager outside the repository.
+- Prefer small, reversible changes, explicit logs, least privilege, rate-limit awareness, and a kill switch.
+- Do not treat a signal, backtest, dashboard state, or model output as financial advice or evidence of future performance.
+- Keep the free-tier budget visible: avoid unnecessary polling, heavy builds, paid APIs, and dependencies.
+- Record assumptions, source timestamps, approvals, and unresolved loopholes before promotion.
 
-## Assumptions / TODOs
+## Layout
 
-- Symbols, timeframes, venue credentials, timezone policy, and event calendars are configuration placeholders.
-- Adapter payloads are not guaranteed to match vendor schemas until integration tests are written.
-- Sequence conditions are deterministic research rules, not a claim of edge.
-- Missing, stale, contradictory, or locked data must fail closed.
+- `docs/ARCHITECTURE.md` — platform choices and constraints.
+- `docs/LOOPHOLES.md` — initial risk and control checklist.
+- `docs/R13_QA_GATE.md` — existing gate reference.
+- `dashboard/` — dependency-free static command-center shell.
+- `trading/` — paper-signal starter with an intentionally unimplemented strategy placeholder.
+- `src/`, `quant/`, and `scripts/` — existing research and quant modules; extend them only behind the same controls.
 
-## KYLA mobile PWA
-
-Open the [installable KYLA dashboard](web/) for the phone-first QUANT, AUTOPILOT, 3D HUB, and PRODUCTS views. It is a no-build static PWA; see [`web/README.md`](web/README.md) for iPhone Safari installation, free hosting, icons, and `dashboard.json` update guidance.
-
-## Scheduled automation
-
-The GitHub Actions workflows run in UTC and use Python 3.11:
-
-- [`nightly-backtest.yml`](.github/workflows/nightly-backtest.yml) — daily at `0 19 * * *`; installs dependencies and runs `python scripts/strategy_factory.py`.
-- [`paper-trader.yml`](.github/workflows/paper-trader.yml) — every 15 minutes during `06:00–13:59` UTC on weekdays; it runs only when the repository variable `PAPER_TRADING_ENABLED` is exactly `true`.
-- [`weekly-kpi.yml`](.github/workflows/weekly-kpi.yml) — Sundays at `0 15 * * 0`; it writes KPI stdout to `reports/weekly-kpi.txt` with `tee`.
-
-The paper and KPI workflows commit their generated paper artifacts: `journal/paper_trades.json` and `journal/trades.db`. Because the database and reports are ignored locally, the workflows use explicit `git add -f`. They configure the `github-actions[bot]` identity and push to `main` using `GITHUB_TOKEN`.
-
-The verified local commands are:
+## Local preview
 
 ```bash
-pip install -r requirements.txt
-python scripts/strategy_factory.py
-python scripts/paper_trader.py --once
-python scripts/trade_journal.py report
+python3 -m http.server 8080 --directory dashboard
+# open http://localhost:8080
+node trading/paper_signal.js path/to/candles.json
 ```
 
-Review the strategy definitions and research caveats in [`docs/STRATEGY_LIBRARY.md`](docs/STRATEGY_LIBRARY.md) before treating any output as evidence.
-
-## License
-
-No license has been selected yet. Treat this repository as all-rights-reserved until the owner adds one.
+The trading command accepts a JSON array of candles and emits a paper-only decision. It does not place orders or invent performance data.
