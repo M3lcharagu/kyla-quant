@@ -12,9 +12,16 @@
     "signal": "node trading/paper_signal.js",
     "whatsapp": "node whatsapp/index.js",
     "webkit:copy": "python3 scripts/copy_webkit.py",
+    "browser:open": "node browser/open.js",
+    "browser:help": "node browser/open.js --help",
+    "scheduler": "node scripts/scheduler.js",
+    "scheduler:help": "node scripts/scheduler.js --help",
     "check": "npm run check:node && npm run check:python && npm run check:help",
-    "check:node": "node --check trading/paper_signal.js && node --check whatsapp/index.js",
+    "check:node": "node --check trading/paper_signal.js && node --check whatsapp/index.js && node --check browser/open.js && node --check scripts/scheduler.js",
     "check:python": "python3 -m py_compile content/daily_content_plan.py scripts/copy_webkit.py",
-    "check:help": "node trading/paper_signal.js --help && node whatsapp/index.js --help && python3 content/daily_content_plan.py --help && python3 scripts/copy_webkit.py --help"
+    "check:help": "node trading/paper_signal.js --help && node whatsapp/index.js --help && node browser/open.js --help && node scripts/scheduler.js --help && python3 content/daily_content_plan.py --help && python3 scripts/copy_webkit.py --help"
+  },
+  "dependencies": {
+    "playwright": "^1.40.1"
   }
 }
