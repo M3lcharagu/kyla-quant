@@ -1,0 +1,4 @@
+# Baileys authentication/session material: never commit these files.
+auth_info_baileys/
+*.session
+*.session-*

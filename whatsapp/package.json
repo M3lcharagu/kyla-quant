@@ -1,0 +1,13 @@
+{
+  "name": "kyla-quant-whatsapp-skeleton",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Non-production Baileys control-channel skeleton for KYLA.",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "6.7.18"
+  }
+}
