@@ -1,0 +1,20 @@
+{
+  "name": "kyla-quant",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local, paper-only research and command-center scaffolding.",
+  "engines": { "node": ">=18", "npm": ">=9" },
+  "scripts": {
+    "setup": "bash ./setup.sh",
+    "help": "bash ./setup.sh --help",
+    "dashboard": "python3 -m http.server 8080 --directory dashboard",
+    "content": "python3 content/daily_content_plan.py",
+    "signal": "node trading/paper_signal.js",
+    "whatsapp": "node whatsapp/index.js",
+    "webkit:copy": "python3 scripts/copy_webkit.py",
+    "check": "npm run check:node && npm run check:python && npm run check:help",
+    "check:node": "node --check trading/paper_signal.js && node --check whatsapp/index.js",
+    "check:python": "python3 -m py_compile content/daily_content_plan.py scripts/copy_webkit.py",
+    "check:help": "node trading/paper_signal.js --help && node whatsapp/index.js --help && python3 content/daily_content_plan.py --help && python3 scripts/copy_webkit.py --help"
+  }
+}
