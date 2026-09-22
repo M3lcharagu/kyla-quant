@@ -4,7 +4,7 @@
 |---|---|---|---:|---:|---|---|---|---|
 | SOLUSDT | 1m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=SOLUSDT&interval=1m&limit=1000: { |
 | SOLUSDT | 1m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=SOLUSDT&interval=1&limit=1000: { |
-| SOLUSDT | 1m | OKX | FAILURE | 48 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
+| SOLUSDT | 1m | OKX | FAILURE | 49 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
 | SOLUSDT | 5m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=SOLUSDT&interval=5m&limit=1000: { |
 | SOLUSDT | 5m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=SOLUSDT&interval=5&limit=1000: { |
 | SOLUSDT | 5m | OKX | FAILURE | 90 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
@@ -24,7 +24,7 @@
 | SOLUSDT | 1h | OKX | FAILURE | - | THIN | - | - | OKX response missing data |
 | BTCUSDT | 1m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=1000: { |
 | BTCUSDT | 1m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=BTCUSDT&interval=1&limit=1000: { |
-| BTCUSDT | 1m | OKX | FAILURE | 48 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
+| BTCUSDT | 1m | OKX | FAILURE | 49 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
 | BTCUSDT | 5m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit=1000: { |
 | BTCUSDT | 5m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=BTCUSDT&interval=5&limit=1000: { |
 | BTCUSDT | 5m | OKX | FAILURE | 90 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
@@ -39,7 +39,7 @@
 | BTCUSDT | 1h | OKX | FAILURE | - | THIN | - | - | OKX response missing data |
 | ETHUSDT | 1m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=1m&limit=1000: { |
 | ETHUSDT | 1m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=ETHUSDT&interval=1&limit=1000: { |
-| ETHUSDT | 1m | OKX | FAILURE | 48 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
+| ETHUSDT | 1m | OKX | FAILURE | 49 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
 | ETHUSDT | 5m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=ETHUSDT&interval=5m&limit=1000: { |
 | ETHUSDT | 5m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=ETHUSDT&interval=5&limit=1000: { |
 | ETHUSDT | 5m | OKX | FAILURE | 90 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
@@ -54,7 +54,7 @@
 | ETHUSDT | 1h | OKX | FAILURE | - | THIN | - | - | OKX response missing data |
 | BNBUSDT | 1m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=BNBUSDT&interval=1m&limit=1000: { |
 | BNBUSDT | 1m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=BNBUSDT&interval=1&limit=1000: { |
-| BNBUSDT | 1m | OKX | FAILURE | 48 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
+| BNBUSDT | 1m | OKX | FAILURE | 49 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
 | BNBUSDT | 5m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=BNBUSDT&interval=5m&limit=1000: { |
 | BNBUSDT | 5m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=BNBUSDT&interval=5&limit=1000: { |
 | BNBUSDT | 5m | OKX | FAILURE | 90 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
@@ -69,7 +69,7 @@
 | BNBUSDT | 1h | OKX | FAILURE | - | THIN | - | - | OKX response missing data |
 | XRPUSDT | 1m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=XRPUSDT&interval=1m&limit=1000: { |
 | XRPUSDT | 1m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=XRPUSDT&interval=1&limit=1000: { |
-| XRPUSDT | 1m | OKX | FAILURE | 48 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
+| XRPUSDT | 1m | OKX | FAILURE | 50 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
 | XRPUSDT | 5m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=XRPUSDT&interval=5m&limit=1000: { |
 | XRPUSDT | 5m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=XRPUSDT&interval=5&limit=1000: { |
 | XRPUSDT | 5m | OKX | FAILURE | 90 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
@@ -84,7 +84,7 @@
 | XRPUSDT | 1h | OKX | FAILURE | - | THIN | - | - | OKX response missing data |
 | ADAUSDT | 1m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=ADAUSDT&interval=1m&limit=1000: { |
 | ADAUSDT | 1m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=ADAUSDT&interval=1&limit=1000: { |
-| ADAUSDT | 1m | OKX | FAILURE | 48 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
+| ADAUSDT | 1m | OKX | FAILURE | 50 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
 | ADAUSDT | 5m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=ADAUSDT&interval=5m&limit=1000: { |
 | ADAUSDT | 5m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=ADAUSDT&interval=5&limit=1000: { |
 | ADAUSDT | 5m | OKX | FAILURE | 90 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
@@ -99,7 +99,7 @@
 | ADAUSDT | 1h | OKX | FAILURE | - | THIN | - | - | OKX response missing data |
 | DOGEUSDT | 1m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=DOGEUSDT&interval=1m&limit=1000: { |
 | DOGEUSDT | 1m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=DOGEUSDT&interval=1&limit=1000: { |
-| DOGEUSDT | 1m | OKX | FAILURE | 48 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
+| DOGEUSDT | 1m | OKX | FAILURE | 50 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
 | DOGEUSDT | 5m | Binance spot | FAILURE | - | THIN | - | - | HTTP 451 from https://api.binance.com/api/v3/klines?symbol=DOGEUSDT&interval=5m&limit=1000: { |
 | DOGEUSDT | 5m | Bybit spot | FAILURE | - | THIN | - | - | HTTP 403 from https://api.bybit.com/v5/market/kline?category=spot&symbol=DOGEUSDT&interval=5&limit=1000: { |
 | DOGEUSDT | 5m | OKX | FAILURE | 90 | THIN | - | - | _validate() missing 1 required positional argument: 'source' |
