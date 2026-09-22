@@ -32,6 +32,17 @@ data/cache/
 reports/
 logs/
 
+# Local auth, sessions, and generated output
+auth_info_baileys/
+whatsapp/auth_info_baileys/
+.wwebjs_auth/
+.wwebjs_cache/
+*.session
+*.session-journal
+*.pid
+*.out
+tmp/
+
 # OS / IDE
 .DS_Store
 .idea/
