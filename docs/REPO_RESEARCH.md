@@ -2,17 +2,21 @@
 
 This ledger captures the supplied research scope for tools relevant to KYLA. It is not an independent verification of current stars, activity, compatibility, licensing, or hosted-service claims. Time-sensitive figures are marked as **research snapshots**.
 
-## TOOLS
+## TOOL
 
 ### Lane: Context generation and architecture orientation
 
 - **Gitingest** — [upstream](https://github.com/cyclotruc/gitingest). MIT and free, for repository-to-LLM digests. **Useful for KYLA context generation**; bound ingestion size because large ingestion may exceed Vercel Hobby limits.
-- **GitDiagram** — [upstream](https://github.com/ahmedkhaleel2004/gitdiagram). MIT and free, for interactive architecture diagrams. **Useful for phone-first codebase orientation**. The supplied research snapshot says 17k stars and active in Sep 2026; do not treat that as an independently verified current count.
+- **GitDiagram** — [upstream](https://github.com/ahmedkhalel2004/gitdiagram). MIT and free, for interactive architecture diagrams. **Useful for phone-first codebase orientation**. The supplied research snapshot says 17k stars and active in Sep 2026; do not treat that as an independently verified current count.
 
 ### Lane: Read-only browsing and reusable agent workflows
 
-- **github1s** — [upstream](https://github.com/conwnet/github1s). MIT and free, a read-only VS Code browser explorer. **Useful for mobile/old-Mac browsing**; private repositories need an auth token. The supplied research snapshot says 23.3k stars and active; do not treat that as an independently verified current count.
-- **ECC (Everything Claude Code)** — [upstream](https://github.com/affaan-m/ECC). MIT, 266k stars, active; standardizes reusable agent skills, memory, security, and workflows. **Useful as a shared template with limits.** Evidence was supplied for Claude/Codex/Cursor, not verified for Copilot/docker-agent/droid/shell. The star/activity labels are research snapshots.
+- **github1s** — [upstream](https://github.com/conwnet/github1s). MIT and free, a read-only VS Code browser explorer. **Useful for mobile/old-Mac browsing**; private repositories need an auth token. The supplied research snapshot says 23.3k+ stars and active; do not treat that as an independently verified current count.
+- **ECC (Everything Claude Code)** — [upstream](https://github.com/affaan-m/ecc). MIT, 266k stars, active; standardizes reusable agent skills, memory, security, and workflows. **Useful as a shared template with limits.** Evidence was supplied for Claude/Codex/Cursor, not verified for Copilot/docker-agent/droid/shell. The star/activity labels are research snapshots.
+
+### Lane: Content drafting and humanization
+
+- **linkedin-agent-skill** — [upstream](https://github.com/Jakeschincariol/linkedin-agent-skill). Assign to KYLA's **content lane only**: use it for drafting and optional local humanization, with a human reviewing and publishing. The verified upstream snapshot is MIT, 608 stars, and latest push Sep 17, 2026; these star/activity values are time-sensitive research snapshots. It is not an automation layer: add no dependencies, secrets, LinkedIn API access, or auto-publishing, and retain KYLA's seven-agent orchestration and manual-publishing boundary.
 
 ### Lane: Hosted-service integrations — not a free local platform
 
